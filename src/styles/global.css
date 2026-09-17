@@ -1,0 +1,277 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Shiv Dham Hindu Temple — Design System
+   ------------------------------------------------------------
+   Palette rationale:
+   - Maroon carries the devotional weight without the glare of
+     pure saffron-on-white (which fails WCAG at body sizes, a
+     live problem on the legacy site).
+   - Marigold is reserved almost exclusively for calls to action
+     so "Book a Ceremony" / "Donate" are never ambiguous.
+   - Ivory instead of #fff keeps long passages of scripture and
+     festival copy comfortable to read under bright light.
+   ============================================================ */
+
+@theme {
+  /* --- Maroon: primary, structural --- */
+  --color-maroon-50:  #fbf3f4;
+  --color-maroon-100: #f6e4e7;
+  --color-maroon-200: #ebc5cb;
+  --color-maroon-300: #d99aa5;
+  --color-maroon-400: #c06b7c;
+  --color-maroon-500: #9e3f52;
+  --color-maroon-600: #6b1d2b;
+  --color-maroon-700: #571825;
+  --color-maroon-800: #43121c;
+  --color-maroon-900: #2e0c13;
+
+  /* --- Marigold: accent, calls to action --- */
+  --color-marigold-50:  #fef9ee;
+  --color-marigold-100: #fcf0d6;
+  --color-marigold-200: #f8dfa8;
+  --color-marigold-300: #f2c86f;
+  --color-marigold-400: #e8a33d;
+  --color-marigold-500: #d4862a;
+  --color-marigold-600: #b06722;
+  --color-marigold-700: #8a4e1e;
+  --color-marigold-800: #6b3d19;
+  --color-marigold-900: #4a2a12;
+
+  /* --- Warm neutrals: surfaces and text --- */
+  --color-ivory-50:  #fdfaf4;
+  --color-ivory-100: #f7f1e7;
+  --color-ivory-200: #ede4d5;
+  --color-ivory-300: #dcceb9;
+  --color-ivory-400: #b8a68c;
+  --color-ivory-500: #8a7a63;
+  --color-ivory-600: #635747;
+  --color-ivory-700: #453d32;
+  --color-ivory-800: #2b251e;
+  --color-ivory-900: #1a1614;
+
+  /* --- Supporting: sacred green for confirmations/prasad --- */
+  --color-tulsi-100: #e6f0e4;
+  --color-tulsi-500: #4a7c46;
+  --color-tulsi-700: #2f5a2c;
+
+  /* --- Type --- */
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-devanagari: "Tiro Devanagari Hindi", "Noto Serif Devanagari", serif;
+
+  /* --- Rhythm --- */
+  --radius-card: 0.875rem;
+  --shadow-lift: 0 1px 2px rgb(43 37 30 / 0.04), 0 8px 24px -8px rgb(43 37 30 / 0.12);
+}
+
+/* Semantic aliases so components never hardcode a ramp step. */
+:root {
+  --surface: var(--color-ivory-50);
+  --surface-raised: #ffffff;
+  --surface-sunken: var(--color-ivory-100);
+  --ink: var(--color-ivory-900);
+  --ink-muted: var(--color-ivory-600);
+  --rule: var(--color-ivory-200);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background-color: var(--surface);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+  p { text-wrap: pretty; }
+
+  /*
+   * Fluid heading scale: every h1/h2 across the site is set from the same
+   * clamp() so a hero title and a section title share one visual rhythm
+   * instead of each template guessing its own text-4xl/5xl combination.
+   */
+  h1 { font-size: clamp(2.5rem, 1.9rem + 2.6vw, 4.25rem); line-height: 1.04; }
+  h2 { font-size: clamp(1.75rem, 1.5rem + 1.1vw, 2.5rem); line-height: 1.12; }
+  h3 { font-size: clamp(1.375rem, 1.25rem + 0.55vw, 1.75rem); line-height: 1.2; }
+
+  /* Sanskrit / Devanagari passages (shlokas, mantras, aarti) */
+  .devanagari {
+    font-family: var(--font-devanagari);
+    line-height: 2;
+    font-size: 1.125em;
+  }
+
+  /* Visible focus for keyboard users — the legacy site has none. */
+  :focus-visible {
+    outline: 3px solid var(--color-marigold-400);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Widened from max-w-6xl (1152px) so large desktop screens don't leave
+     the page swimming in empty margins — most of the viewport is now
+     used, with padding scaling up on bigger screens instead of a hard
+     content-width cap kicking in early. */
+  .container-page { @apply mx-auto w-full max-w-[100rem] px-6 sm:px-10 lg:px-14 xl:px-20; }
+  .container-prose { @apply mx-auto w-full max-w-3xl px-5 sm:px-8; }
+  /* No max-width cap: the site header/utility bar should always span the
+     full browser width, unlike body content which stays readable-width. */
+  .container-header { @apply w-full px-6 sm:px-10 lg:px-14 xl:px-20; }
+
+  /*
+   * Tailwind v4 only lets @apply reference real utilities, not other
+   * @layer components classes — so each variant repeats the shared
+   * `.btn` utility list directly rather than chaining `@apply btn`.
+   */
+  .btn, .btn-primary, .btn-secondary, .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3
+           text-sm font-semibold tracking-wide transition
+           focus-visible:outline-3 disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .btn-primary {
+    @apply bg-marigold-400 text-ivory-900 hover:bg-marigold-300
+           shadow-sm hover:shadow-md;
+  }
+  .btn-secondary {
+    @apply bg-maroon-600 text-ivory-50 hover:bg-maroon-500;
+  }
+  .btn-ghost {
+    @apply border border-ivory-300 text-maroon-700 hover:bg-ivory-100;
+  }
+
+  .card, .card-photo {
+    @apply block rounded-[var(--radius-card)] bg-white border border-ivory-200
+           overflow-hidden transition duration-300 hover:border-ivory-300 hover:-translate-y-1;
+    box-shadow: var(--shadow-lift);
+  }
+  .card:hover, .card-photo:hover {
+    box-shadow: 0 4px 8px rgb(43 37 30 / 0.06), 0 20px 40px -12px rgb(43 37 30 / 0.18);
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.18em] text-maroon-500;
+  }
+
+  /* Long-form editorial content (deity pages, festival explainers). */
+  .prose-temple {
+    @apply text-[1.0625rem] leading-[1.75] text-ivory-800;
+  }
+  .prose-temple :where(h2) { @apply mt-12 mb-4 text-2xl sm:text-3xl text-maroon-700; }
+  .prose-temple :where(h3) { @apply mt-8 mb-3 text-xl text-maroon-600; }
+  .prose-temple :where(p) { @apply my-4; }
+  .prose-temple :where(ul) { @apply my-4 list-disc pl-6 space-y-2; }
+  .prose-temple :where(ol) { @apply my-4 list-decimal pl-6 space-y-2; }
+  .prose-temple :where(a) {
+    @apply text-maroon-600 underline decoration-marigold-300 decoration-2
+           underline-offset-2 hover:decoration-marigold-400;
+  }
+  .prose-temple :where(blockquote) {
+    @apply my-6 border-l-4 border-marigold-300 bg-ivory-100 py-3 pl-5 pr-4
+           italic text-ivory-700 rounded-r-lg;
+  }
+  .prose-temple :where(img) { @apply my-6 rounded-xl; }
+  .prose-temple :where(table) { @apply my-6 w-full text-left text-sm; }
+  .prose-temple :where(th) { @apply border-b-2 border-ivory-300 pb-2 font-semibold text-maroon-700; }
+  .prose-temple :where(td) { @apply border-b border-ivory-200 py-2.5; }
+
+  /* ----------------------------------------------------------------
+     Hero system — every page header runs through one of these so the
+     site reads as one design instead of a flat ivory bar repeated
+     with different words on it.
+  ---------------------------------------------------------------- */
+
+  /* Full-bleed photo hero: dark gradient bottom-up so light text stays
+     readable regardless of what's happening in the photo underneath.
+     `.hero-photo-compact` is the same treatment, shorter, for interior
+     pages — listed together because Tailwind v4 won't let @apply chain
+     one @layer components class into another. */
+  .hero-photo, .hero-photo-compact {
+    @apply relative isolate overflow-hidden bg-maroon-800;
+  }
+  .hero-photo {
+    min-height: 22rem;
+  }
+  .hero-photo-compact {
+    min-height: 16rem;
+  }
+  @media (min-width: 640px) {
+    .hero-photo { min-height: 26rem; }
+    .hero-photo-compact { min-height: 18rem; }
+  }
+  .hero-photo::after, .hero-photo-compact::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgb(46 12 19 / 0.35) 0%,
+      rgb(46 12 19 / 0.15) 35%,
+      rgb(46 12 19 / 0.78) 100%
+    );
+  }
+  /* object-contain, not object-cover: shows the whole photo rather than
+     cropping to fill the frame, since several of the temple's photos are
+     portrait-oriented and a crop was cutting off deities/people. The
+     surrounding bg-maroon-800 fills any letterboxed space. */
+  .hero-photo > img, .hero-photo-compact > img {
+    @apply absolute inset-0 h-full w-full object-contain;
+  }
+  .hero-photo > .hero-content, .hero-photo-compact > .hero-content {
+    @apply relative z-10;
+  }
+
+  /* Pattern-only hero for pages without a matching photograph — carries
+     the brand through gradient + mandala texture instead of a picture. */
+  .hero-pattern {
+    @apply relative isolate overflow-hidden bg-gradient-to-br from-maroon-700 via-maroon-800 to-maroon-900;
+  }
+  .hero-pattern .mandala-decor {
+    @apply pointer-events-none absolute -right-24 -top-24 h-[36rem] w-[36rem] text-marigold-200 sm:block hidden;
+  }
+
+  /* Ornamental section break used between major page sections in place
+     of a plain HR — a small centered mark, not a photo, to keep pages
+     that don't need imagery from feeling empty between sections. */
+  .section-break {
+    @apply flex items-center justify-center gap-4 py-2;
+  }
+  .section-break::before,
+  .section-break::after {
+    content: '';
+    @apply h-px w-16 bg-ivory-300 sm:w-24;
+  }
+
+  /* Card with a photo top and content below — the workhorse for
+     deity/program/event grids so every listing feels like a place,
+     not a spreadsheet row. */
+  /* object-contain, not object-cover: many of the temple's card photos
+     are portrait-oriented promotional graphics, and cropping them to
+     fill the card was cutting off text and faces. The ivory backdrop
+     fills any letterboxed space so the card still reads as intentional. */
+  .card-photo img {
+    @apply h-56 w-full object-contain bg-ivory-100 transition duration-300;
+  }
+  .card-photo:hover img {
+    @apply scale-[1.03];
+  }
+}

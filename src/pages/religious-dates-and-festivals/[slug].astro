@@ -1,0 +1,64 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import { FESTIVAL_GLOSSARY, matchFestival } from '../../data/festival-glossary';
+import festivals2026 from '../../data/festivals-2026.json';
+import { MONTH_NAMES } from '../../lib/calendar';
+
+export async function getStaticPaths() {
+  return FESTIVAL_GLOSSARY.map((entry) => ({ params: { slug: entry.slug }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+
+const relatedEvent = entry.relatedEventId ? await getEntry('events', entry.relatedEventId) : undefined;
+const registrationUrl = relatedEvent?.data.tweebleUrl ?? relatedEvent?.data.registrationUrl;
+
+const thisYearsDates = (festivals2026 as { date: string; festivals: string[] }[])
+  .filter((d) => d.festivals.some((f) => matchFestival(f).slug === entry.slug))
+  .map((d) => {
+    const [, month, day] = d.date.split('-').map(Number);
+    return { date: d.date, label: `${MONTH_NAMES[month - 1]} ${day}` };
+  });
+---
+
+<BaseLayout title={entry.title} description={entry.summary}>
+  <PageHero eyebrow="Religious Dates & Festivals" title={entry.title} description={entry.summary} compact />
+
+  <div class="container-page py-14 sm:py-16">
+    <div class="grid gap-10 lg:grid-cols-[3fr_2fr] lg:items-start">
+      <article class="prose-temple">
+        <h2>What This Observance Means</h2>
+        <p>{entry.explanation}</p>
+      </article>
+
+      <aside class="card p-6">
+        {thisYearsDates.length > 0 && (
+          <>
+            <h2 class="font-display text-lg font-semibold text-maroon-700">On the 2026 Calendar</h2>
+            <ul class="mt-4 space-y-2">
+              {thisYearsDates.map((d) => (
+                <li class="rounded-xl border border-ivory-200 bg-ivory-50 px-4 py-2.5 text-sm font-medium text-ivory-800">{d.label}, 2026</li>
+              ))}
+            </ul>
+          </>
+        )}
+
+        {relatedEvent && (
+          <div class={thisYearsDates.length > 0 ? 'mt-6' : ''}>
+            <p class="text-sm text-ivory-600">{relatedEvent.data.summary}</p>
+            {registrationUrl ? (
+              <a href={registrationUrl} target="_blank" rel="noopener" class="btn-primary mt-4 w-full">Register on Tweeble</a>
+            ) : (
+              <a href={`/events/${relatedEvent.id}/`} class="btn-primary mt-4 w-full">See Event Details</a>
+            )}
+          </div>
+        )}
+
+        <a href="/events/" class="mt-4 block text-center text-sm font-semibold text-maroon-700 hover:underline">View Full Events Calendar</a>
+        <a href="/religious-dates-and-festivals/" class="mt-2 block text-center text-sm font-semibold text-maroon-700 hover:underline">← All Religious Dates &amp; Festivals</a>
+      </aside>
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,60 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+
+export async function getStaticPaths() {
+  const deities = await getCollection('deities');
+  return deities.map((deity) => ({ params: { slug: deity.id }, props: { deity } }));
+}
+
+const { deity } = Astro.props;
+const { Content } = await render(deity);
+---
+
+<BaseLayout title={deity.data.title} description={deity.data.summary}>
+  <PageHero eyebrow={deity.data.epithet} title={deity.data.title} image={deity.data.image} imageAlt={deity.data.imageAlt ?? deity.data.title}>
+    {deity.data.sanskrit && <p class="devanagari mt-3 text-2xl text-marigold-200">{deity.data.sanskrit}</p>}
+    {deity.data.sacredDays.length > 0 && (
+      <div class="mt-6 flex flex-wrap gap-2">
+        {deity.data.sacredDays.map((day) => (
+          <span class="rounded-full bg-white/15 px-3.5 py-1.5 text-xs font-medium text-white backdrop-blur-sm">{day}</span>
+        ))}
+      </div>
+    )}
+  </PageHero>
+
+  <div class="container-page py-16 sm:py-20">
+    <div class="grid gap-12 lg:grid-cols-[3fr_2fr] lg:items-start">
+      <article class="prose-temple">
+        <Content />
+      </article>
+
+      <aside class="space-y-6 lg:sticky lg:top-24">
+        {deity.data.sacredDays.length > 0 && (
+          <div class="card p-6">
+            <p class="eyebrow">Sacred Days</p>
+            <ul class="mt-4 space-y-2">
+              {deity.data.sacredDays.map((day) => (
+                <li class="flex items-center gap-2.5 text-sm text-ivory-700">
+                  <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-marigold-400"></span>
+                  {day}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <div class="hero-pattern rounded-2xl p-7 text-center">
+          <h2 class="text-lg text-white">Worship {deity.data.title}</h2>
+          <p class="mx-auto mt-2 max-w-xs text-sm text-ivory-100">
+            Arrange a dedicated puja or archana in {deity.data.title}'s honor, at the temple or in your home.
+          </p>
+          <a href="/puja-bookings/" class="btn-primary mt-5 w-full">View Temple Services</a>
+        </div>
+
+        <a href="/deities/" class="block text-center text-sm font-semibold text-maroon-700 hover:underline">← All Deities</a>
+      </aside>
+    </div>
+  </div>
+</BaseLayout>

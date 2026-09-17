@@ -1,0 +1,51 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+
+const prayers = (await getCollection('prayers')).sort((a, b) => a.data.order - b.data.order);
+
+// Group by deity so 35 prayers reads as a browsable reference, not a wall.
+const groups = new Map<string, typeof prayers>();
+for (const p of prayers) {
+  const key = p.data.deity ?? 'Other';
+  if (!groups.has(key)) groups.set(key, []);
+  groups.get(key)!.push(p);
+}
+const sortedGroups = [...groups.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+---
+
+<BaseLayout title="Prayers & Shlokas" description="Traditional Sanskrit prayers, shlokas, and stotras offered at Shri Shiv Dham Hindu Temple, in Hindi and English.">
+  <PageHero
+    eyebrow="Worship"
+    title="Prayers &amp; Shlokas"
+    description="Traditional Sanskrit hymns, in Hindi and English, offered in worship at the temple, each with a plain-English note on what it's for."
+    compact
+  />
+  <div class="container-page py-16 sm:py-20">
+    <nav class="mb-12 flex flex-wrap justify-center gap-2" aria-label="Jump to deity">
+      {sortedGroups.map(([deity]) => (
+        <a href={`#${deity.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`} class="rounded-full border border-ivory-300 px-3.5 py-1.5 text-xs font-medium text-maroon-700 hover:bg-ivory-100">
+          {deity}
+        </a>
+      ))}
+    </nav>
+
+    <div class="space-y-14">
+      {sortedGroups.map(([deity, group]) => (
+        <section id={deity.toLowerCase().replace(/[^a-z0-9]+/g, '-')}>
+          <h2 class="text-maroon-700">{deity}</h2>
+          <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {group.map((prayer) => (
+              <a href={`/prayers/${prayer.id}/`} class="card p-6">
+                {prayer.data.sanskrit && <p class="devanagari text-lg text-maroon-700">{prayer.data.sanskrit}</p>}
+                <h3 class="mt-2 font-display text-lg font-semibold text-maroon-700">{prayer.data.title}</h3>
+                {prayer.data.summary && <p class="mt-2 text-sm text-ivory-600 line-clamp-3">{prayer.data.summary}</p>}
+              </a>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  </div>
+</BaseLayout>

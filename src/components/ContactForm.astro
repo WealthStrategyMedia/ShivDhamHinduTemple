@@ -1,0 +1,92 @@
+---
+// Posts to the Netlify Function at /.netlify/functions/contact, which
+// sends the message via Resend. See netlify/functions/contact.ts.
+//
+// `messageIntro` lets a page fully control the textarea's starting text
+// (e.g. the volunteering page pre-filling "I'd like to volunteer..."). The
+// `?service=` query param is kept for the puja-booking pages, which link
+// here with the service name attached and expect the older
+// "I'd like to request: X" phrasing.
+interface Props {
+  messageIntro?: string;
+  messageLabel?: string;
+  buttonLabel?: string;
+}
+const { messageIntro, messageLabel = 'Message', buttonLabel = 'Send Message' } = Astro.props;
+const serviceParam = Astro.url.searchParams.get('service');
+const prefillText = messageIntro ?? (serviceParam ? `I'd like to request: ${serviceParam}\n\n` : '');
+---
+
+<form id="contact-form" class="card space-y-5 p-6 sm:p-8" data-prefill={prefillText}>
+  <div class="grid gap-5 sm:grid-cols-2">
+    <div>
+      <label for="name" class="block text-sm font-medium text-ivory-800">Name</label>
+      <input id="name" name="name" type="text" required autocomplete="name"
+        class="mt-1.5 w-full rounded-lg border border-ivory-300 bg-white px-3.5 py-2.5 text-sm focus:border-maroon-400" />
+    </div>
+    <div>
+      <label for="email" class="block text-sm font-medium text-ivory-800">Email</label>
+      <input id="email" name="email" type="email" required autocomplete="email"
+        class="mt-1.5 w-full rounded-lg border border-ivory-300 bg-white px-3.5 py-2.5 text-sm focus:border-maroon-400" />
+    </div>
+  </div>
+  <div>
+    <label for="phone" class="block text-sm font-medium text-ivory-800">Phone <span class="text-ivory-400">(optional)</span></label>
+    <input id="phone" name="phone" type="tel" autocomplete="tel"
+      class="mt-1.5 w-full rounded-lg border border-ivory-300 bg-white px-3.5 py-2.5 text-sm focus:border-maroon-400" />
+  </div>
+  <div>
+    <label for="message" class="block text-sm font-medium text-ivory-800">{messageLabel}</label>
+    <textarea id="message" name="message" rows="5" required
+      class="mt-1.5 w-full rounded-lg border border-ivory-300 bg-white px-3.5 py-2.5 text-sm focus:border-maroon-400"></textarea>
+  </div>
+
+  <!-- Honeypot field — hidden from real visitors, catches simple bots -->
+  <div class="hidden" aria-hidden="true">
+    <label for="company">Company</label>
+    <input id="company" name="company" type="text" tabindex="-1" autocomplete="off" />
+  </div>
+
+  <button type="submit" class="btn-primary w-full sm:w-auto">{buttonLabel}</button>
+  <p id="contact-status" class="text-sm" role="status" aria-live="polite"></p>
+</form>
+
+<script>
+  const form = document.getElementById('contact-form') as HTMLFormElement | null;
+  const status = document.getElementById('contact-status');
+  const prefill = form?.dataset.prefill;
+  if (prefill) {
+    const textarea = form?.querySelector<HTMLTextAreaElement>('#message');
+    if (textarea) textarea.value = prefill;
+  }
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!status) return;
+    const data = Object.fromEntries(new FormData(form).entries());
+
+    if (data.company) return; // honeypot tripped, silently drop
+
+    const submitButton = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+    if (submitButton) submitButton.disabled = true;
+    status.textContent = 'Sending…';
+    status.className = 'text-sm text-ivory-600';
+
+    try {
+      const res = await fetch('/.netlify/functions/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('Request failed');
+      status.textContent = "Message sent. We'll be in touch soon.";
+      status.className = 'text-sm text-tulsi-700';
+      form.reset();
+    } catch {
+      status.textContent = `Something went wrong. Please email us directly instead.`;
+      status.className = 'text-sm text-maroon-600';
+    } finally {
+      if (submitButton) submitButton.disabled = false;
+    }
+  });
+</script>

@@ -1,0 +1,30 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import ContactForm from '../../components/ContactForm.astro';
+---
+
+<BaseLayout
+  title="Summer Camp Registration"
+  description="Register your child for the temple's summer camp."
+>
+  <PageHero
+    eyebrow="Programs"
+    title="Summer Camp Registration"
+    description="Register your child for the temple's summer camp. Share their details below and the temple office will follow up to confirm enrollment and payment."
+    compact
+  />
+
+  <div class="container-page py-14">
+    <div class="mx-auto max-w-2xl">
+      <ContactForm
+        messageLabel="Child's Details"
+        buttonLabel="Send Registration"
+        messageIntro={"I'd like to register my child for Summer Camp.\n\nChild's full name: \nDate of birth: \nCurrent school grade: \nEmergency contact name & number: \nAny special instructions: \n"}
+      />
+      <p class="mt-4 text-center text-xs text-ivory-500">
+        See <a href="/summer-camp/" class="underline">Summer Camp</a> for the full schedule and what's included.
+      </p>
+    </div>
+  </div>
+</BaseLayout>

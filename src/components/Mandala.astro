@@ -1,0 +1,38 @@
+---
+/**
+ * Decorative mandala/lotus motif used as a subtle texture on hero
+ * sections and dividers that don't have a photograph to carry them.
+ * Pure inline SVG (no external asset) so it themes with currentColor.
+ */
+interface Props {
+  class?: string;
+  opacity?: number;
+}
+const { class: className = '', opacity = 0.12 } = Astro.props;
+---
+
+<svg
+  class={className}
+  style={`opacity:${opacity}`}
+  viewBox="0 0 400 400"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-hidden="true"
+>
+  <g stroke="currentColor" stroke-width="1">
+    <circle cx="200" cy="200" r="180" />
+    <circle cx="200" cy="200" r="150" />
+    <circle cx="200" cy="200" r="60" />
+    {Array.from({ length: 16 }).map((_, i) => {
+      const angle = (i * 360) / 16;
+      return <line x1="200" y1="200" x2="200" y2="20" transform={`rotate(${angle} 200 200)`} />;
+    })}
+    {Array.from({ length: 12 }).map((_, i) => {
+      const angle = (i * 360) / 12 + 15;
+      const rad = (angle * Math.PI) / 180;
+      const cx = 200 + 150 * Math.cos(rad);
+      const cy = 200 + 150 * Math.sin(rad);
+      return <circle cx={cx} cy={cy} r="18" />;
+    })}
+  </g>
+</svg>

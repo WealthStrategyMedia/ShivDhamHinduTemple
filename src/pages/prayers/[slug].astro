@@ -1,0 +1,39 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Mandala from '../../components/Mandala.astro';
+
+export async function getStaticPaths() {
+  const prayers = await getCollection('prayers');
+  return prayers.map((prayer) => ({ params: { slug: prayer.id }, props: { prayer } }));
+}
+
+const { prayer } = Astro.props;
+const { Content } = await render(prayer);
+---
+
+<BaseLayout title={prayer.data.title} description={prayer.data.summary ?? prayer.data.occasion}>
+  <div class="hero-pattern">
+    <Mandala class="mandala-decor" />
+    <div class="container-page relative z-10 py-16 text-center sm:py-20">
+      {prayer.data.sanskrit && <p class="devanagari text-2xl text-marigold-200">{prayer.data.sanskrit}</p>}
+      <h1 class="mt-2 text-white">{prayer.data.title}</h1>
+      <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
+        {prayer.data.deity && <span class="rounded-full bg-white/15 px-3.5 py-1.5 text-xs font-medium text-white backdrop-blur-sm">{prayer.data.deity}</span>}
+        {prayer.data.occasion && <span class="rounded-full bg-white/15 px-3.5 py-1.5 text-xs font-medium text-white backdrop-blur-sm">{prayer.data.occasion}</span>}
+      </div>
+    </div>
+  </div>
+  <article class="container-prose py-16 sm:py-20">
+    {prayer.data.summary && (
+      <div class="mb-10 rounded-2xl bg-ivory-100 p-6">
+        <p class="eyebrow">In Plain Terms</p>
+        <p class="mt-2 text-[1.0625rem] leading-relaxed text-ivory-800">{prayer.data.summary}</p>
+      </div>
+    )}
+    <div class="prose-temple">
+      <Content />
+    </div>
+    <a href="/prayers/" class="mt-10 inline-block text-sm font-semibold text-maroon-700 hover:underline">← All Prayers &amp; Shlokas</a>
+  </article>
+</BaseLayout>

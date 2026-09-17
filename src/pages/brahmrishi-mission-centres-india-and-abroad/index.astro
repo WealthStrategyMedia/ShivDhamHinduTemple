@@ -1,0 +1,118 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import Mandala from '../../components/Mandala.astro';
+import gurujiPortrait from '../../assets/photos/guruji-portrait.jpg';
+
+const HEAD_OFFICE = [
+  { name: 'Brahmrishi Ashram', place: 'Virat Nagar, Post C.R.P.F., Pinjore, Haryana 134104' },
+  { name: 'International Brahmrishi Mission (Head Office)', place: 'Sector 19-A, Chandigarh' },
+  { name: 'Metaphysical Science Research Institute', place: 'Sector 19-A, Chandigarh' },
+  { name: 'Brahmrishi Yoga Training College', place: 'Sector 19-A, Chandigarh' },
+  { name: 'Divine Radiance (monthly magazine)', place: 'Sector 19-A, Chandigarh' },
+];
+
+const INDIA_CENTERS = [
+  { name: 'Brahmrishi Bawra Sr. Sec. School', place: 'Madhopuri, Goshala Road, Ludhiana, Punjab' },
+  { name: 'Shri Shakti Peeth Brahmrishi Bawra Sr. Sec. School', place: 'Beantpura, Chandigarh Road, Ludhiana, Punjab' },
+  { name: 'Brahmrishi Bawra Sr. Sec. School', place: 'Indraprastha Colony, Haibowal Kalan, Ludhiana, Punjab' },
+  { name: 'Brahmrishi Mission School', place: 'Hanumangarh Road, Near Water Works, Abohar, Punjab' },
+  { name: 'Pt. Ram Prakash Pathak Brahmrishi Mission School', place: 'Baba Fateh Singh Nagar, Sukhchain Nagar Road, Phagwara, Punjab' },
+  { name: 'Brahmrishi Yoga Ashram', place: 'E-10, Panchsheel Garden, Naveen Shahdara, Delhi' },
+  { name: 'Brahmrishi Mission School', place: 'Jarar, Devas, Piplaage, Bhuntar, Kullu, Himachal Pradesh' },
+  { name: 'Brahmrishi Shiksha Niketan', place: 'Raghunathpur, Kullu, Himachal Pradesh' },
+  { name: 'Brahmrishi Bawra Laya Yog Siddhi Sthal (Gayatri Sadan)', place: 'Pragpur (Heritage Village), Near Dehra, Himachal Pradesh' },
+  { name: 'Brahmrishi Bawra Shanti Vidyapeeth', place: 'Deena Nagar, Dhar Road, Udhampur, Jammu & Kashmir' },
+  { name: 'Brahmrishi Bawra Shanti Vidyapeeth', place: 'Manwal, Jammu & Kashmir' },
+  { name: 'Brahmrishi Bawra Anant Vidyapeeth', place: 'Mahanpur, Kathua, Jammu & Kashmir' },
+  { name: 'Brahmrishi Bawra Vidya Mandir', place: "Kanwal, Chakkishun Dass, Gyanpur, Bhadohi, Uttar Pradesh (Gurudev's native village)" },
+  { name: 'Banwasi Chetana Ashram', place: 'Jilehari Ghat, Opp. Gita Dham, Jabalpur, Madhya Pradesh' },
+  { name: 'Brahmrishi Mission School', place: 'Banvasi Chetana Ashram, Tapovan Salaiya, Shahdol, Madhya Pradesh' },
+  { name: 'Brahmrishi Bawra Shiksha Sansthan', place: 'Umaria, Madhya Pradesh' },
+  { name: 'Brahmrishi Bawra Shiksha Sansthan', place: 'Karhi Road, Satna, Madhya Pradesh' },
+  { name: 'Brahmrishi Ashram', place: 'New Bye Pass, Bhupatwala, Haridwar, Uttarakhand' },
+  { name: 'Brahmrishi Prakritik Chikitsalaya', place: 'Near Jain Colony Camp, Yamuna Nagar, Haryana' },
+  { name: 'Shri Geeta Ramayan Seva Sangh', place: 'Ashok Nagar, Moksha Marg, Udaipur, Rajasthan' },
+];
+
+const ABROAD_CENTERS = [
+  { name: 'Shri Shiv Dham Hindu Temple & Brahmrishi Yoga Ashram', place: "460 O'Berry Hoover Road, Orlando, FL 32825, USA", isThisTemple: true },
+  { name: 'Brahmrishi Ashram', place: '1226 North Mantua Street, Kent, OH 44240, USA' },
+  { name: 'Brahmrishi Mission of Canada, Shri Ram Dham Hindu Temple', place: '525 Bridge Street East, Kitchener, Ontario N2K 3C5, Canada' },
+  { name: 'Brahmrishi Mission', place: '278 Heston Road, Heston, Middlesex TW5 0RT, United Kingdom' },
+  { name: 'Brahmrishi Ashram', place: 'Krimpenerbosweg 1, 2925 LB, Krimpen aan den IJssel, Netherlands' },
+  { name: 'Brahmrishi Ashram Gita Bhawan', place: '717 Leosduinseweg, 2571 AM, Den Haag, Netherlands' },
+  { name: 'Surya Mandir Brahmrishi Gayatri Sansthan', place: 'Zinniastraat 15/A, Gemene Landweg, Paramaribo, Suriname, South America' },
+];
+---
+
+<BaseLayout title="Brahmrishi Mission Centres, India and Abroad" description="Shri Shiv Dham Hindu Temple's place within the worldwide Brahmrishi Mission, and its sister centers across India and around the world.">
+  <PageHero
+    eyebrow="About"
+    title="Brahmrishi Mission Centres"
+    description="Shri Shiv Dham Hindu Temple is a proud part of the Brahmrishi Mission, founded and led by H.H. Brahmrishi Vishvatma Bawra Ji Maharaj — a worldwide family of ashrams, schools, and service centers."
+    image={gurujiPortrait}
+    imageAlt="Gurudev, Founder of the Brahmrishi Mission"
+    focus="top"
+  />
+
+  <div class="container-page py-14 sm:py-16">
+    <div class="prose-temple container-prose mx-auto mb-14 px-0 text-center">
+      <p>
+        At Shri Shiv Dham, Gurudev's teachings are brought to life through religious, cultural, and social programs that offer a space for personal spiritual growth as well as community connection and service. Guided by the Mission's core values — love, selfless service, and spiritual awakening — the Brahmrishi Mission has grown into a global movement, with centers across India and around the world offering spiritual teaching, educational institutions, yoga ashrams, and humanitarian projects.
+      </p>
+    </div>
+
+    <section>
+      <h2 class="text-maroon-700">Head Office &amp; Flagship Institutions</h2>
+      <p class="mt-2 max-w-2xl text-sm text-ivory-600">Headquartered at Virat Nagar and Chandigarh, India — including, under Vishva Shiksha Niketan Sansthan: Vishva Shiksha Niketan Sr. Sec. School, Brahmrishi College of Education, Shri Ram Nanda Sanskrit Mahavidyalaya, Gautam Patel Ayurvedic Charitable Hospital, Brahmrishi Mission Saraswati Memorial Charitable Eye &amp; Dental Care Centre, and Brahmrishi Bawra Go Sadan.</p>
+      <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {HEAD_OFFICE.map((c) => (
+          <div class="rounded-xl border border-marigold-200 bg-marigold-50 p-5">
+            <h3 class="font-display text-sm font-semibold text-maroon-700">{c.name}</h3>
+            <p class="mt-1.5 text-xs text-ivory-600">{c.place}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <div class="section-break my-14">
+      <Mandala class="h-8 w-8 text-marigold-400" opacity={0.6} />
+    </div>
+
+    <section>
+      <h2 class="text-maroon-700">Centers Across India</h2>
+      <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {INDIA_CENTERS.map((c) => (
+          <div class="rounded-xl border border-ivory-200 bg-white p-5">
+            <h3 class="font-display text-sm font-semibold text-maroon-700">{c.name}</h3>
+            <p class="mt-1.5 text-xs text-ivory-600">{c.place}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <div class="section-break my-14">
+      <Mandala class="h-8 w-8 text-marigold-400" opacity={0.6} />
+    </div>
+
+    <section>
+      <h2 class="text-maroon-700">Centers Abroad</h2>
+      <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {ABROAD_CENTERS.map((c) => (
+          <div class:list={['rounded-xl border p-5', c.isThisTemple ? 'border-maroon-600 bg-maroon-700 text-white' : 'border-ivory-200 bg-white']}>
+            {c.isThisTemple && <p class="mb-1.5 text-[0.65rem] font-semibold uppercase tracking-wide text-marigold-300">This Temple</p>}
+            <h3 class:list={['font-display text-sm font-semibold', c.isThisTemple ? 'text-white' : 'text-maroon-700']}>{c.name}</h3>
+            <p class:list={['mt-1.5 text-xs', c.isThisTemple ? 'text-ivory-100' : 'text-ivory-600']}>{c.place}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <div class="mt-14 rounded-2xl bg-ivory-100 p-8 text-center">
+      <p class="mx-auto max-w-xl text-ivory-700">
+        Every one of these centers, near and far, carries forward the same mission Gurudev began: a place to worship, to learn, and to serve. For questions about the temple's own connection to the Mission, <a href="/contact-us/" class="font-semibold text-maroon-700 underline decoration-marigold-300 decoration-2 underline-offset-2">contact the temple office</a> directly.
+      </p>
+    </div>
+  </div>
+</BaseLayout>

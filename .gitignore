@@ -1,0 +1,24 @@
+# Astro build output
+dist/
+.astro/
+
+# Dependencies
+node_modules/
+
+# Environment variables (Stripe/Resend keys — never commit these)
+.env
+.env.*
+!.env.example
+
+# Netlify
+.netlify/
+
+# Editor/OS
+.DS_Store
+Thumbs.db
+desktop.ini
+~$*
+
+# Logs
+npm-debug.log*
+*.log

@@ -1,0 +1,194 @@
+---
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHero from '../../../components/PageHero.astro';
+import MonthCalendar from '../../../components/MonthCalendar.astro';
+import { buildCalendar, MONTH_NAMES } from '../../../lib/calendar';
+import guruJiHoliHero from '../../../assets/photos/guruji-holi.jpg';
+
+const events = await getCollection('events');
+const recurring = events.filter((e) => e.data.recurrence).sort((a, b) => a.data.title.localeCompare(b.data.title));
+const dated = events
+  .filter((e) => e.data.start)
+  .sort((a, b) => a.data.start!.getTime() - b.data.start!.getTime());
+
+const CATEGORY_LABEL: Record<string, string> = {
+  monthly: 'Recurring',
+  yearly: 'Annual Festival',
+  festival: 'Festival',
+  class: 'Class',
+  special: 'Special',
+};
+
+const calendar = buildCalendar(events);
+
+// Static site, so every month of the calendar year renders up front and a
+// small script swaps which one is visible — no server round-trip needed to
+// flip a month. Defaults to the current month.
+const CALENDAR_YEAR = 2026;
+const now = new Date();
+const defaultMonth = now.getUTCFullYear() === CALENDAR_YEAR ? now.getUTCMonth() : 0;
+const todayISO = now.toISOString().slice(0, 10);
+---
+
+<BaseLayout title="Events Calendar Archive" description="A backup, locally-maintained calendar of recurring pujas and annual festivals — the live events list is at /events/." noindex>
+  <PageHero
+    eyebrow="Calendar Archive"
+    title="Events &amp; Festivals Archive"
+    description="A local backup of the temple's recurring worship and annual festivals. For the live, always-current event list, see the main Events page."
+    image={guruJiHoliHero}
+    imageAlt="Holi celebration at the temple"
+    focus="top"
+  >
+    <a href="/events/" class="btn-primary mt-6">View Live Events</a>
+  </PageHero>
+
+  <div class="container-page py-16 sm:py-20">
+    <!-- View toggle -->
+    <div class="flex items-center justify-center">
+      <div class="inline-flex gap-1 rounded-full bg-ivory-100 p-1">
+        <button type="button" data-view-btn="calendar" class="view-btn rounded-full px-5 py-2 text-sm font-semibold transition">Calendar</button>
+        <button type="button" data-view-btn="list" class="view-btn rounded-full px-5 py-2 text-sm font-semibold transition">List</button>
+      </div>
+    </div>
+
+    <!-- Calendar view -->
+    <section id="view-calendar" class="mt-10">
+      <div class="mb-5 flex items-center justify-center gap-4">
+        <button type="button" id="cal-prev" class="flex h-9 w-9 items-center justify-center rounded-full border border-ivory-300 text-maroon-700 hover:bg-ivory-100" aria-label="Previous month">‹</button>
+        <span id="cal-label" class="w-40 text-center font-display text-lg font-semibold text-maroon-700"></span>
+        <button type="button" id="cal-next" class="flex h-9 w-9 items-center justify-center rounded-full border border-ivory-300 text-maroon-700 hover:bg-ivory-100" aria-label="Next month">›</button>
+      </div>
+
+      <div id="calendar-months">
+        {MONTH_NAMES.map((_, month) => (
+          <MonthCalendar year={CALENDAR_YEAR} month={month} calendar={calendar} active={month === defaultMonth} todayISO={todayISO} />
+        ))}
+      </div>
+
+      <p class="mt-6 text-center text-xs text-ivory-500">
+        Highlighted dates link to a full event page. Every other name is also clickable, and links to a plain-English explanation of that observance.
+      </p>
+    </section>
+
+    <!-- List view -->
+    <section id="view-list" class="mt-10 hidden">
+      {dated.length > 0 && (
+        <div>
+          <h2 class="text-2xl text-maroon-700">Annual Festivals</h2>
+          <div class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {dated.map((event) => (
+              <a href={`/events/${event.id}/`} class="card-photo group">
+                {event.data.image ? (
+                  <Image src={event.data.image} alt={event.data.title} width={480} height={280} class="h-52" />
+                ) : (
+                  <div class="flex h-52 items-center justify-center bg-gradient-to-br from-maroon-600 to-maroon-800">
+                    <span class="font-display text-3xl text-marigold-200">ॐ</span>
+                  </div>
+                )}
+                <div class="p-6">
+                  <p class="eyebrow">{CATEGORY_LABEL[event.data.category] ?? event.data.category}</p>
+                  <h3 class="mt-1.5 font-display text-xl font-semibold text-maroon-700 group-hover:text-marigold-600">{event.data.title}</h3>
+                  <p class="mt-1 text-sm font-medium text-marigold-600">
+                    {event.data.start!.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}
+                  </p>
+                  {event.data.summary && <p class="mt-2 text-sm text-ivory-600 line-clamp-2">{event.data.summary}</p>}
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {recurring.length > 0 && (
+        <div class="mt-16">
+          <h2 class="text-2xl text-maroon-700">Recurring Worship</h2>
+          <div class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {recurring.map((event) => (
+              <a href={`/events/${event.id}/`} class="card-photo group">
+                {event.data.image ? (
+                  <Image src={event.data.image} alt={event.data.title} width={480} height={280} class="h-52" />
+                ) : (
+                  <div class="flex h-52 items-center justify-center bg-gradient-to-br from-maroon-600 to-maroon-800">
+                    <span class="font-display text-3xl text-marigold-200">ॐ</span>
+                  </div>
+                )}
+                <div class="p-6">
+                  <p class="eyebrow">{CATEGORY_LABEL[event.data.category] ?? event.data.category}</p>
+                  <h3 class="mt-1.5 font-display text-xl font-semibold text-maroon-700 group-hover:text-marigold-600">{event.data.title}</h3>
+                  <p class="mt-1 text-sm font-medium text-marigold-600">{event.data.recurrence!.rule}</p>
+                  {event.data.summary && <p class="mt-2 text-sm text-ivory-600 line-clamp-2">{event.data.summary}</p>}
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+    </section>
+
+    <div class="mt-16 rounded-2xl bg-ivory-100 p-8 text-center">
+      <p class="text-ivory-700">
+        Looking for the full Hindu calendar of tithis and observances? See
+        <a href="/religious-dates-and-festivals/" class="font-semibold text-maroon-700 underline decoration-marigold-300 decoration-2 underline-offset-2">Religious Dates &amp; Festivals</a>.
+      </p>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .view-btn { color: var(--color-ivory-600); }
+  .view-btn[data-active="true"] {
+    background: white;
+    color: var(--color-maroon-700);
+    box-shadow: var(--shadow-lift);
+  }
+</style>
+
+<script define:vars={{ monthNames: MONTH_NAMES, defaultMonth, year: 2026 }}>
+  let currentMonth = defaultMonth;
+
+  const label = document.getElementById('cal-label');
+  const monthsContainer = document.getElementById('calendar-months');
+  const prevBtn = document.getElementById('cal-prev');
+  const nextBtn = document.getElementById('cal-next');
+
+  function renderMonth() {
+    const panels = monthsContainer?.querySelectorAll('[data-month]') ?? [];
+    panels.forEach((panel) => {
+      const [, m] = panel.getAttribute('data-month').split('-').map(Number);
+      panel.classList.toggle('hidden', m !== currentMonth);
+    });
+    if (label) label.textContent = `${monthNames[currentMonth]} ${year}`;
+  }
+
+  prevBtn?.addEventListener('click', () => {
+    currentMonth = (currentMonth + 12 - 1) % 12;
+    renderMonth();
+  });
+  nextBtn?.addEventListener('click', () => {
+    currentMonth = (currentMonth + 1) % 12;
+    renderMonth();
+  });
+  renderMonth();
+
+  // View toggle: calendar <-> list
+  const viewButtons = document.querySelectorAll('[data-view-btn]');
+  const views = { calendar: document.getElementById('view-calendar'), list: document.getElementById('view-list') };
+
+  function setView(name) {
+    for (const [key, el] of Object.entries(views)) {
+      el?.classList.toggle('hidden', key !== name);
+    }
+    viewButtons.forEach((btn) => btn.setAttribute('data-active', String(btn.getAttribute('data-view-btn') === name)));
+    try { localStorage.setItem('events-view', name); } catch {}
+  }
+
+  viewButtons.forEach((btn) => {
+    btn.addEventListener('click', () => setView(btn.getAttribute('data-view-btn')));
+  });
+
+  let initial = 'calendar';
+  try { initial = localStorage.getItem('events-view') || 'calendar'; } catch {}
+  setView(initial);
+</script>

@@ -1,0 +1,388 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import Mandala from '../../components/Mandala.astro';
+import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
+import guruJiHoliHero from '../../assets/photos/guruji-holi.jpg';
+---
+
+<BaseLayout title="Events" description="Every upcoming event at Shri Shiv Dham Hindu Temple, live from the Temple Hub.">
+  <PageHero
+    eyebrow="Calendar"
+    title="Upcoming Events"
+    description="Every event on the temple's calendar, pulled live from the Temple Hub. Select one to see full details and register."
+    image={guruJiHoliHero}
+    imageAlt="Holi celebration at the temple"
+    focus="top"
+  />
+
+  <div class="container-page py-16 sm:py-20">
+    <!-- View toggle -->
+    <div class="flex items-center justify-center">
+      <div class="inline-flex gap-1 rounded-full bg-ivory-100 p-1">
+        <button type="button" data-view-btn="calendar" class="view-btn rounded-full px-5 py-2 text-sm font-semibold transition">Calendar</button>
+        <button type="button" data-view-btn="list" class="view-btn rounded-full px-5 py-2 text-sm font-semibold transition">List</button>
+      </div>
+    </div>
+
+    <div id="events-loading" class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-live="polite">
+      {[0, 1, 2].map(() => (
+        <div class="card-photo animate-pulse">
+          <div class="h-56 bg-ivory-200"></div>
+          <div class="space-y-2 p-6">
+            <div class="h-3 w-1/3 rounded bg-ivory-200"></div>
+            <div class="h-5 w-4/5 rounded bg-ivory-200"></div>
+            <div class="h-3 w-full rounded bg-ivory-200"></div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div id="events-error" class="mt-10 hidden rounded-2xl border border-marigold-200 bg-marigold-50 p-8 text-center">
+      <p class="text-ivory-700">We couldn't load the live event list just now. Please try refreshing, or see the temple's local event archive below in the meantime.</p>
+    </div>
+
+    <div id="events-empty" class="mt-10 hidden rounded-2xl bg-ivory-100 p-8 text-center">
+      <p class="text-ivory-700">No events are scheduled at the moment — check back soon, or see the temple's local event archive below.</p>
+    </div>
+
+    <!-- Calendar view -->
+    <section id="view-calendar" class="mt-10 hidden">
+      <div class="mb-5 flex items-center justify-center gap-4">
+        <button type="button" id="cal-prev" class="flex h-9 w-9 items-center justify-center rounded-full border border-ivory-300 text-maroon-700 hover:bg-ivory-100" aria-label="Previous month">‹</button>
+        <span id="cal-label" class="w-40 text-center font-display text-lg font-semibold text-maroon-700"></span>
+        <button type="button" id="cal-next" class="flex h-9 w-9 items-center justify-center rounded-full border border-ivory-300 text-maroon-700 hover:bg-ivory-100" aria-label="Next month">›</button>
+      </div>
+      <div id="calendar-months"></div>
+      <p class="mt-6 text-center text-xs text-ivory-500">
+        <span class="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-marigold-300 align-middle"></span> Upcoming —
+        <span class="mx-1 inline-block h-2.5 w-2.5 rounded-full bg-ivory-300 align-middle"></span> Past. Select an event to view it on the Temple Hub.
+      </p>
+    </section>
+
+    <!-- List view -->
+    <section id="view-list" class="mt-10 hidden">
+      <div id="events-empty-upcoming" class="hidden rounded-2xl bg-ivory-100 p-8 text-center">
+        <p class="text-ivory-700">No upcoming events right now — check back soon, or see what's happened recently below.</p>
+      </div>
+      <div id="events-grid" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"></div>
+
+      <div id="past-events-toggle-wrap" class="mt-12 hidden text-center">
+        <button id="past-events-toggle" type="button" class="inline-flex items-center gap-2 rounded-full border border-ivory-300 px-5 py-2.5 text-sm font-semibold text-ivory-600 transition hover:border-maroon-300 hover:text-maroon-700">
+          <span id="past-events-toggle-label">Show Past Events</span>
+          <svg id="past-events-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="transition" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+        </button>
+      </div>
+
+      <div id="past-events-section" class="mt-8 hidden">
+        <div class="mb-6 flex items-center gap-3">
+          <span class="h-px flex-1 bg-ivory-200"></span>
+          <p class="text-xs font-semibold uppercase tracking-wide text-ivory-400">Past Events</p>
+          <span class="h-px flex-1 bg-ivory-200"></span>
+        </div>
+        <div id="past-events-grid" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"></div>
+      </div>
+    </section>
+
+    <!-- Watch highlights -->
+    <div class="section-break my-16">
+      <Mandala class="h-8 w-8 text-marigold-400" opacity={0.6} />
+    </div>
+    <div class="mx-auto max-w-2xl text-center">
+      <p class="eyebrow">Watch</p>
+      <h2 class="mt-2">See a Celebration in Action</h2>
+      <p class="mt-4 text-ivory-600">A look inside Shravan Mela, the temple's community fair — highlights from the conversations, the crowds, and the celebration itself.</p>
+    </div>
+    <div class="mt-10 grid gap-6 sm:grid-cols-2">
+      <YouTubeEmbed id="VfXK4py4Z2s" title="A Special Conversation from Shravan Mela 2026" />
+      <YouTubeEmbed id="irIzmfhxN_Q" title="Inside Shravan Mela: Faith, Family, Small Business & New Opportunities at Shri Shiv Dham" />
+      <YouTubeEmbed id="2pNGn70cW0Y" title="Shravan Mela 2026: A Community Celebration to Remember" orientation="portrait" class="mx-auto w-full max-w-xs" />
+      <YouTubeEmbed id="gO2nbjK-2UQ" title="Inside Shravan Mela 2026 at Shri Shiv Dham" orientation="portrait" class="mx-auto w-full max-w-xs" />
+    </div>
+
+    <div class="mt-16 rounded-2xl bg-ivory-100 p-8 text-center">
+      <p class="text-ivory-700">
+        Looking for the full Hindu calendar of tithis and observances? See
+        <a href="/religious-dates-and-festivals/" class="font-semibold text-maroon-700 underline decoration-marigold-300 decoration-2 underline-offset-2">Religious Dates &amp; Festivals</a>.
+        Prefer the temple's own recurring worship schedule? See the <a href="/events/archive/" class="font-semibold text-maroon-700 underline decoration-marigold-300 decoration-2 underline-offset-2">Events Archive</a>.
+      </p>
+    </div>
+  </div>
+</BaseLayout>
+
+<template id="event-card-template">
+  <a class="card-photo group" target="_blank" rel="noopener">
+    <div class="event-cover-wrap relative h-56 overflow-hidden bg-gradient-to-br from-maroon-600 to-maroon-800">
+      <img class="event-cover hidden h-56 w-full object-cover" loading="lazy" alt="" />
+      <span class="event-fallback flex h-56 items-center justify-center font-display text-3xl text-marigold-200">ॐ</span>
+      <span class="event-price absolute right-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-maroon-700"></span>
+      <span class="event-past absolute left-3 top-3 hidden rounded-full bg-ivory-900/80 px-3 py-1 text-xs font-semibold text-white">Past Event</span>
+    </div>
+    <div class="p-6">
+      <p class="event-date eyebrow"></p>
+      <h3 class="event-title mt-1.5 font-display text-xl font-semibold text-maroon-700 group-hover:text-marigold-600"></h3>
+      <p class="event-venue mt-1 text-sm font-medium text-marigold-600"></p>
+      <p class="event-desc mt-2 text-sm text-ivory-600 line-clamp-2"></p>
+      <div class="mt-3 flex items-center justify-between">
+        <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-maroon-700">
+          <span class="event-cta-label">Register on the Temple Hub</span>
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" /></svg>
+        </span>
+        <button type="button" class="share-trigger flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ivory-400 hover:bg-ivory-100 hover:text-maroon-700" aria-label="Share this event">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 10.6 15.4 6.9M8.6 13.4l6.8 3.7" /></svg>
+        </button>
+      </div>
+    </div>
+  </a>
+</template>
+
+<script>
+  import { fetchTweebleEvents, formatCents, formatEventDate, truncate, isEventPast, type TweebleEvent } from '../../lib/tweeble-client';
+  import { initShareButtons } from '../../lib/share-widget';
+  initShareButtons();
+
+  const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  const loadingEl = document.getElementById('events-loading');
+  const errorEl = document.getElementById('events-error');
+  const emptyEl = document.getElementById('events-empty');
+  const gridEl = document.getElementById('events-grid');
+  const emptyUpcomingEl = document.getElementById('events-empty-upcoming');
+  const pastGridEl = document.getElementById('past-events-grid');
+  const pastSectionEl = document.getElementById('past-events-section');
+  const pastToggleWrapEl = document.getElementById('past-events-toggle-wrap');
+  const pastToggleBtn = document.getElementById('past-events-toggle');
+  const pastToggleLabel = document.getElementById('past-events-toggle-label');
+  const pastChevron = document.getElementById('past-events-chevron');
+  const cardTemplate = document.getElementById('event-card-template') as HTMLTemplateElement | null;
+
+  function dateKey(d: Date) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  function buildCard(event: TweebleEvent, isPast: boolean): DocumentFragment | null {
+    if (!cardTemplate) return null;
+    const node = cardTemplate.content.cloneNode(true) as DocumentFragment;
+    const link = node.querySelector('a')!;
+    link.href = event.url;
+
+    const shareBtn = node.querySelector<HTMLElement>('.share-trigger')!;
+    shareBtn.dataset.shareUrl = event.url;
+    shareBtn.dataset.shareTitle = event.title;
+
+    const img = node.querySelector<HTMLImageElement>('.event-cover')!;
+    const fallback = node.querySelector<HTMLElement>('.event-fallback')!;
+    if (event.coverImageUrl) {
+      img.src = event.coverImageUrl;
+      img.alt = event.title;
+      img.classList.remove('hidden');
+      fallback.classList.add('hidden');
+    }
+
+    if (isPast) {
+      node.querySelector('.event-past')!.classList.remove('hidden');
+      node.querySelector('.event-cover-wrap')!.classList.add('grayscale');
+      node.querySelector('.event-cta-label')!.textContent = 'View Recap on the Temple Hub';
+      (link as HTMLElement).classList.add('opacity-80');
+    }
+
+    node.querySelector('.event-price')!.textContent = formatCents(event.ticketPriceCents);
+    node.querySelector('.event-date')!.textContent = formatEventDate(event.eventDate);
+    node.querySelector('.event-title')!.textContent = event.title;
+    node.querySelector('.event-venue')!.textContent = event.venueName ?? '';
+    node.querySelector('.event-desc')!.textContent = truncate(event.description, 140);
+    return node;
+  }
+
+  function renderList(events: TweebleEvent[]) {
+    if (!gridEl || !pastGridEl || !cardTemplate) return;
+    const now = Date.now();
+    const upcoming = events.filter((e) => !isEventPast(e, now)).sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime());
+    const past = events.filter((e) => isEventPast(e, now)).sort((a, b) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime());
+
+    if (upcoming.length === 0) {
+      emptyUpcomingEl?.classList.remove('hidden');
+    } else {
+      for (const event of upcoming) {
+        const node = buildCard(event, false);
+        if (node) gridEl.appendChild(node);
+      }
+    }
+
+    if (past.length > 0) {
+      for (const event of past) {
+        const node = buildCard(event, true);
+        if (node) pastGridEl.appendChild(node);
+      }
+      pastToggleWrapEl?.classList.remove('hidden');
+      if (pastToggleLabel) pastToggleLabel.textContent = `Show Past Events (${past.length})`;
+
+      let expanded = false;
+      pastToggleBtn?.addEventListener('click', () => {
+        expanded = !expanded;
+        pastSectionEl?.classList.toggle('hidden', !expanded);
+        pastChevron?.classList.toggle('rotate-180', expanded);
+        if (pastToggleLabel) pastToggleLabel.textContent = expanded ? 'Hide Past Events' : `Show Past Events (${past.length})`;
+      });
+    }
+  }
+
+  function buildCalendar(events: TweebleEvent[]) {
+    // A multi-day event (e.g. a mela running the 14th through the 20th)
+    // gets a pill on every day it spans, not just its first day, so the
+    // calendar shows it as ongoing throughout instead of a one-off on
+    // whichever day it started.
+    const byDate = new Map<string, TweebleEvent[]>();
+    for (const e of events) {
+      const start = new Date(e.eventDate);
+      const end = e.endAt ? new Date(e.endAt) : start;
+      const cursor = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+      const last = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+      let guard = 0;
+      while (cursor.getTime() <= last.getTime() && guard < 60) {
+        const key = dateKey(cursor);
+        if (!byDate.has(key)) byDate.set(key, []);
+        byDate.get(key)!.push(e);
+        cursor.setDate(cursor.getDate() + 1);
+        guard++;
+      }
+    }
+
+    const now = new Date();
+    const startYear = now.getFullYear();
+    const startMonth = now.getMonth();
+    let maxOffset = 6;
+    for (const e of events) {
+      const d = new Date(e.endAt ?? e.eventDate);
+      const offset = (d.getFullYear() - startYear) * 12 + (d.getMonth() - startMonth);
+      if (offset > maxOffset) maxOffset = offset;
+    }
+    maxOffset = Math.min(maxOffset, 11);
+
+    const months: { year: number; month: number }[] = [];
+    for (let i = 0; i <= maxOffset; i++) {
+      const d = new Date(startYear, startMonth + i, 1);
+      months.push({ year: d.getFullYear(), month: d.getMonth() });
+    }
+
+    const todayKey = dateKey(now);
+    const container = document.getElementById('calendar-months');
+    if (!container) return;
+    container.innerHTML = '';
+
+    months.forEach(({ year, month }, i) => {
+      const panel = document.createElement('div');
+      panel.className = 'calendar-month' + (i === 0 ? '' : ' hidden');
+      panel.dataset.monthIndex = String(i);
+
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const startWeekday = new Date(year, month, 1).getDay();
+      const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+      const cells: { dayNumber: number; inMonth: boolean; key: string | null }[] = [];
+      for (let i2 = startWeekday - 1; i2 >= 0; i2--) cells.push({ dayNumber: daysInPrevMonth - i2, inMonth: false, key: null });
+      for (let d = 1; d <= daysInMonth; d++) cells.push({ dayNumber: d, inMonth: true, key: `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}` });
+      let trailing = 1;
+      while (cells.length % 7 !== 0) cells.push({ dayNumber: trailing++, inMonth: false, key: null });
+
+      const weekdayRow = WEEKDAYS.map((w) => `<div class="bg-maroon-700 py-2 text-center font-semibold uppercase tracking-wide text-ivory-100">${w}</div>`).join('');
+
+      const cellsHtml = cells
+        .map((cell) => {
+          const dayEvents = cell.key ? byDate.get(cell.key) ?? [] : [];
+          const isToday = cell.key === todayKey;
+          const classes = ['min-h-[5rem] bg-white p-1.5 sm:min-h-[6.5rem] sm:p-2', !cell.inMonth && 'bg-ivory-50 text-ivory-300', isToday && 'ring-2 ring-inset ring-marigold-400']
+            .filter(Boolean)
+            .join(' ');
+          const numberClass = cell.inMonth ? 'text-ivory-500' : 'text-ivory-300';
+          const items = dayEvents
+            .slice(0, 3)
+            .map((e) => {
+              const isPast = isEventPast(e);
+              const a = document.createElement('a');
+              a.href = e.url;
+              a.target = '_blank';
+              a.rel = 'noopener';
+              a.title = isPast ? `${e.title} (Past — view recap)` : e.title;
+              a.className = isPast
+                ? 'block truncate rounded bg-ivory-100 px-1 py-0.5 font-medium text-ivory-500 hover:bg-ivory-200'
+                : 'block truncate rounded bg-marigold-100 px-1 py-0.5 font-medium text-maroon-700 hover:bg-marigold-200';
+              a.textContent = e.title;
+              return `<li>${a.outerHTML}</li>`;
+            })
+            .join('');
+          const more = dayEvents.length > 3 ? `<li class="px-1 text-[0.65rem] text-ivory-400">+${dayEvents.length - 3} more</li>` : '';
+          return `<div class="${classes}"><span class="text-[0.7rem] font-semibold ${numberClass}">${cell.dayNumber}</span>${items || more ? `<ul class="mt-1 space-y-0.5">${items}${more}</ul>` : ''}</div>`;
+        })
+        .join('');
+
+      panel.innerHTML = `
+        <div class="mb-4 flex items-center justify-between">
+          <h3 class="font-display text-xl font-semibold text-maroon-700">${MONTH_NAMES[month]} ${year}</h3>
+        </div>
+        <div class="grid grid-cols-7 gap-px overflow-hidden rounded-xl border border-ivory-200 bg-ivory-200 text-xs">${weekdayRow}${cellsHtml}</div>
+      `;
+      container.appendChild(panel);
+    });
+
+    let current = 0;
+    const label = document.getElementById('cal-label');
+    const prevBtn = document.getElementById('cal-prev');
+    const nextBtn = document.getElementById('cal-next');
+
+    function renderMonth() {
+      container?.querySelectorAll<HTMLElement>('[data-month-index]').forEach((panel) => {
+        panel.classList.toggle('hidden', Number(panel.dataset.monthIndex) !== current);
+      });
+      if (label) label.textContent = `${MONTH_NAMES[months[current].month]} ${months[current].year}`;
+      if (prevBtn) (prevBtn as HTMLButtonElement).disabled = current === 0;
+      if (nextBtn) (nextBtn as HTMLButtonElement).disabled = current === months.length - 1;
+    }
+
+    prevBtn?.addEventListener('click', () => { if (current > 0) { current--; renderMonth(); } });
+    nextBtn?.addEventListener('click', () => { if (current < months.length - 1) { current++; renderMonth(); } });
+    renderMonth();
+  }
+
+  function setView(name: string) {
+    document.getElementById('view-calendar')?.classList.toggle('hidden', name !== 'calendar');
+    document.getElementById('view-list')?.classList.toggle('hidden', name !== 'list');
+    document.querySelectorAll('[data-view-btn]').forEach((btn) => btn.setAttribute('data-active', String(btn.getAttribute('data-view-btn') === name)));
+    try { localStorage.setItem('events-view', name); } catch {}
+  }
+
+  document.querySelectorAll('[data-view-btn]').forEach((btn) => {
+    btn.addEventListener('click', () => setView(btn.getAttribute('data-view-btn')!));
+  });
+
+  (async () => {
+    try {
+      const events = await fetchTweebleEvents();
+      if (events.length === 0) {
+        emptyEl?.classList.remove('hidden');
+        return;
+      }
+      buildCalendar(events);
+      renderList(events);
+
+      let initial = 'calendar';
+      try { initial = localStorage.getItem('events-view') || 'calendar'; } catch {}
+      setView(initial);
+    } catch (err) {
+      errorEl?.classList.remove('hidden');
+      console.error('Failed to load Tweeble events', err);
+    } finally {
+      loadingEl?.remove();
+    }
+  })();
+</script>
+
+<style>
+  .view-btn { color: var(--color-ivory-600); }
+  .view-btn[data-active="true"] {
+    background: white;
+    color: var(--color-maroon-700);
+    box-shadow: var(--shadow-lift);
+  }
+</style>

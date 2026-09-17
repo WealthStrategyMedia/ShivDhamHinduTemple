@@ -1,0 +1,66 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import shrineImage from '../../assets/photos/altar-shiva-radhakrishna-ganesh.jpg';
+import prayerHallImage from '../../assets/photos/congregation-puja.jpg';
+import communityImage from '../../assets/photos/community-group.jpg';
+import canteenImage from '../../assets/photos/canteen.jpg';
+
+const FACILITIES = [
+  {
+    title: 'Deity Shrines',
+    image: shrineImage,
+    body: "Home to the temple's seven enshrined deities, each with its own dedicated shrine for daily aarti and festival worship.",
+  },
+  {
+    title: 'Prayer Hall',
+    image: prayerHallImage,
+    body: 'A spacious hall for daily prayer and the temple\'s larger festival gatherings, seating the full congregation for major celebrations.',
+  },
+  {
+    title: 'Community Center',
+    image: communityImage,
+    body: 'Used for classes, cultural programs, and community events throughout the year, from Bal Vihar to festival celebrations.',
+  },
+  {
+    title: 'Canteen',
+    image: canteenImage,
+    body: 'Serving prasad and meals to devotees on puja days and throughout festival celebrations.',
+  },
+];
+---
+
+<BaseLayout title="Temple Facilities" description="Worship halls, deity shrines, community spaces, and the canteen that make up the temple grounds.">
+  <PageHero
+    eyebrow="Visit"
+    title="Temple Facilities"
+    description="The temple grounds include shrines for each of the seven enshrined deities, spaces for daily prayer and larger festival gatherings, a community center, and the temple canteen."
+    image={shrineImage}
+    imageAlt="The temple's main shrine and altar"
+  />
+
+  <div class="container-page py-16 sm:py-20">
+    <div class="grid gap-6 sm:grid-cols-2">
+      {FACILITIES.map((f) => (
+        <div class="card-photo">
+          <Image src={f.image} alt={f.title} width={640} height={420} class="h-56" />
+          <div class="p-6">
+            <h2 class="font-display text-xl font-semibold text-maroon-700">{f.title}</h2>
+            <p class="mt-2 text-sm leading-relaxed text-ivory-600">{f.body}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div class="mt-12 rounded-2xl bg-ivory-100 p-8 text-center">
+      <h2 class="text-xl text-maroon-700">Parking</h2>
+      <p class="mx-auto mt-2 max-w-lg text-sm text-ivory-600">
+        On-site parking is available, though limited, so carpooling is appreciated on major festival days. See <a href="/directions-to-our-temple/" class="font-semibold text-maroon-700 underline decoration-marigold-300 decoration-2 underline-offset-2">Directions</a> for details.
+      </p>
+      <p class="mt-4 text-sm text-ivory-600">
+        For a fuller look at the temple's spaces and celebrations, visit the <a href="/gallery/" class="font-semibold text-maroon-700 underline decoration-marigold-300 decoration-2 underline-offset-2">Gallery</a>.
+      </p>
+    </div>
+  </div>
+</BaseLayout>

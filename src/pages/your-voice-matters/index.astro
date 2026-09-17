@@ -1,0 +1,27 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import ContactForm from '../../components/ContactForm.astro';
+---
+
+<BaseLayout
+  title="Your Voice Matters"
+  description="Share feedback to help the temple improve your experience."
+>
+  <PageHero
+    eyebrow="Get Involved"
+    title="We Value Your Feedback"
+    description="Please take a few minutes to share your thoughts. Your responses help us improve your future visits, whether about our facilities, services, or the temple's online presence."
+    compact
+  />
+
+  <div class="container-page py-14">
+    <div class="mx-auto max-w-2xl">
+      <ContactForm
+        messageLabel="Your Feedback"
+        buttonLabel="Send Feedback"
+        messageIntro={"Spiritual atmosphere: \nHow welcomed did you feel: \nOverall experience: \nSuggestions: \n"}
+      />
+    </div>
+  </div>
+</BaseLayout>

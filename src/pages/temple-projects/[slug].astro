@@ -1,0 +1,29 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import DonationForm from '../../components/DonationForm.astro';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects');
+  return projects.map((project) => ({ params: { slug: project.id }, props: { project } }));
+}
+
+const { project } = Astro.props;
+const { Content } = await render(project);
+---
+
+<BaseLayout title={project.data.title} description={project.data.summary}>
+  <PageHero eyebrow="Temple Projects" title={project.data.title} description={project.data.summary} image={project.data.image} imageAlt={project.data.title} compact />
+
+  <div class="container-page grid gap-10 py-14 sm:py-16 lg:grid-cols-[3fr_2fr] lg:items-start">
+    <article class="prose-temple">
+      <Content />
+    </article>
+
+    <aside class="lg:sticky lg:top-24">
+      <DonationForm fund={project.data.fund} />
+      <a href="/temple-projects/" class="mt-4 block text-center text-sm font-semibold text-maroon-700 hover:underline">← All Temple Projects</a>
+    </aside>
+  </div>
+</BaseLayout>

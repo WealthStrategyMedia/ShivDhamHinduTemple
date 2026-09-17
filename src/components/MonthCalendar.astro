@@ -1,0 +1,63 @@
+---
+import { buildMonthGrid, MONTH_NAMES, type CalendarDay } from '../lib/calendar';
+
+interface Props {
+  year: number;
+  month: number; // 0-indexed
+  calendar: Map<string, CalendarDay>;
+  active?: boolean;
+  todayISO: string;
+}
+
+const { year, month, calendar, active = false, todayISO } = Astro.props;
+const cells = buildMonthGrid(year, month, calendar);
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+---
+
+<div class="calendar-month" data-month={`${year}-${month}`} class:list={{ hidden: !active }}>
+  <div class="mb-4 flex items-center justify-between">
+    <h3 class="font-display text-xl font-semibold text-maroon-700">{MONTH_NAMES[month]} {year}</h3>
+  </div>
+  <div class="grid grid-cols-7 gap-px overflow-hidden rounded-xl border border-ivory-200 bg-ivory-200 text-xs">
+    {WEEKDAYS.map((w) => (
+      <div class="bg-maroon-700 py-2 text-center font-semibold uppercase tracking-wide text-ivory-100">{w}</div>
+    ))}
+    {cells.map((cell) => (
+      <div
+        class:list={[
+          'min-h-[5rem] bg-white p-1.5 sm:min-h-[6.5rem] sm:p-2',
+          !cell.inMonth && 'bg-ivory-50 text-ivory-300',
+          cell.date === todayISO && 'ring-2 ring-inset ring-marigold-400',
+        ]}
+      >
+        <span class:list={['text-[0.7rem] font-semibold', cell.inMonth ? 'text-ivory-500' : 'text-ivory-300']}>
+          {cell.dayNumber}
+        </span>
+        {cell.day && (
+          <ul class="mt-1 space-y-0.5">
+            {cell.day.items.slice(0, 3).map((item) =>
+              item.highlight ? (
+                <li>
+                  <a href={item.href} class="block truncate rounded bg-marigold-100 px-1 py-0.5 font-medium text-maroon-700 hover:bg-marigold-200" title={item.label}>
+                    {item.label}
+                  </a>
+                </li>
+              ) : item.href ? (
+                <li>
+                  <a href={item.href} class="block truncate px-1 text-ivory-500 hover:text-maroon-700 hover:underline" title={item.label}>
+                    {item.label}
+                  </a>
+                </li>
+              ) : (
+                <li class="truncate px-1 text-ivory-500" title={item.label}>{item.label}</li>
+              )
+            )}
+            {cell.day.items.length > 3 && (
+              <li class="px-1 text-[0.65rem] text-ivory-400">+{cell.day.items.length - 3} more</li>
+            )}
+          </ul>
+        )}
+      </div>
+    ))}
+  </div>
+</div>

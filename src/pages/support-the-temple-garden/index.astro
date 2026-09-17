@@ -1,0 +1,23 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import DonationForm from '../../components/DonationForm.astro';
+import PageHero from '../../components/PageHero.astro';
+---
+
+<BaseLayout title="Support the Temple Garden" description="Support restoration of the temple garden.">
+  <PageHero eyebrow="Give" title="Support the Temple Garden" description="Supports restoration of the temple garden." compact />
+
+  <div class="container-page grid gap-12 py-14 lg:grid-cols-[3fr_2fr]">
+    <article class="prose-temple">
+      <p>
+        The temple garden is a quiet, green space for reflection on the temple grounds. Gifts to this fund go directly toward restoring and maintaining it, so it stays a peaceful place for the whole community.
+      </p>
+      <p>
+        Looking for a different fund? See <a href="/donations/">General Fund</a> or <a href="/donations/shivadham/">Shivadham</a>, or visit <a href="/online-donations/">Online Donations</a> for all giving options.
+      </p>
+    </article>
+    <div>
+      <DonationForm fund="Temple Garden" />
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,142 @@
+---
+import { getEntry, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import Mandala from '../../components/Mandala.astro';
+
+const page = await getEntry('pages', 'membership-drive');
+const { Content } = page ? await render(page) : { Content: null };
+---
+
+<BaseLayout title={page?.data.title ?? 'Membership Drive'} description={page?.data.summary}>
+  <PageHero
+    eyebrow="Give"
+    title={page?.data.title ?? 'Membership Drive'}
+    description={page?.data.summary}
+    image={page?.data.hero}
+    imageAlt={page?.data.heroAlt}
+  />
+
+  <div class="container-page py-16 sm:py-20">
+    {Content && (
+      <div class="prose-temple container-prose mx-auto px-0">
+        <Content />
+      </div>
+    )}
+
+    <div class="section-break my-14">
+      <Mandala class="h-8 w-8 text-marigold-400" opacity={0.6} />
+    </div>
+
+    <div class="mx-auto max-w-2xl text-center">
+      <p class="eyebrow">Join Today</p>
+      <h2 class="mt-2">Membership Packages</h2>
+      <p class="mt-4 text-ivory-600">Choose a membership package and sign up directly, live from the Temple Hub.</p>
+    </div>
+
+    <div id="membership-loading" class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-live="polite">
+      {[0, 1, 2].map(() => (
+        <div class="card animate-pulse p-6">
+          <div class="h-5 w-2/3 rounded bg-ivory-200"></div>
+          <div class="mt-3 h-3 w-full rounded bg-ivory-200"></div>
+          <div class="mt-2 h-3 w-4/5 rounded bg-ivory-200"></div>
+          <div class="mt-5 h-9 w-full rounded-full bg-ivory-200"></div>
+        </div>
+      ))}
+    </div>
+
+    <div id="membership-error" class="mt-10 hidden rounded-2xl border border-marigold-200 bg-marigold-50 p-8 text-center">
+      <p class="text-ivory-700">We couldn't load membership packages just now. Please try refreshing, or use "How to Join" above in the meantime.</p>
+    </div>
+
+    <div id="membership-empty" class="mt-10 hidden rounded-2xl bg-ivory-100 p-8 text-center">
+      <p class="text-ivory-700">Membership packages will appear here as soon as they're published on the Temple Hub. In the meantime, see "How to Join" above to start or renew your membership today.</p>
+    </div>
+
+    <div id="membership-grid" class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"></div>
+  </div>
+</BaseLayout>
+
+<template id="membership-card-template">
+  <div class="card flex flex-col p-6">
+    <div class="flex items-start justify-between gap-3">
+      <h3 class="package-name font-display text-lg font-semibold text-maroon-700"></h3>
+      <button type="button" class="share-trigger flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ivory-400 hover:bg-ivory-100 hover:text-maroon-700" aria-label="Share this membership package">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 10.6 15.4 6.9M8.6 13.4l6.8 3.7" /></svg>
+      </button>
+    </div>
+    <p class="package-price mt-1 font-display text-2xl font-semibold text-marigold-600"></p>
+    <p class="package-desc mt-3 flex-1 text-sm leading-relaxed text-ivory-600"></p>
+    <ul class="package-benefits mt-3 hidden space-y-1.5 text-sm text-ivory-700"></ul>
+    <a class="package-link btn-primary mt-5 w-full" target="_blank" rel="noopener">Join on the Temple Hub</a>
+  </div>
+</template>
+
+<script>
+  import { fetchTweebleMembership, pick, truncate, type TweebleMembershipPackage } from '../../lib/tweeble-client';
+  import { initShareButtons } from '../../lib/share-widget';
+  initShareButtons();
+
+  const loadingEl = document.getElementById('membership-loading');
+  const errorEl = document.getElementById('membership-error');
+  const emptyEl = document.getElementById('membership-empty');
+  const gridEl = document.getElementById('membership-grid');
+  const template = document.getElementById('membership-card-template') as HTMLTemplateElement | null;
+
+  function money(cents: number, cadence?: string): string {
+    const amount = `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+    return cadence ? `${amount} / ${cadence}` : amount;
+  }
+
+  function renderPackage(pkg: TweebleMembershipPackage) {
+    if (!gridEl || !template) return;
+    const node = template.content.cloneNode(true) as DocumentFragment;
+
+    const name = pick<string>(pkg, ['name', 'title']) ?? 'Membership';
+    const description = pick<string>(pkg, ['description', 'summary']) ?? '';
+    const priceCents = pick<number>(pkg, ['priceCents', 'price']) ?? 0;
+    const cadence = pick<string>(pkg, ['subscriptionCadence', 'cadence', 'billingCycle', 'interval']);
+    const benefits = pick<string[]>(pkg, ['benefits', 'perks', 'includes']);
+    const url = pick<string>(pkg, ['url', 'link']) ?? 'https://www.tweeble.com';
+
+    node.querySelector('.package-name')!.textContent = name;
+    const shareBtn = node.querySelector<HTMLElement>('.share-trigger')!;
+    shareBtn.dataset.shareUrl = url;
+    shareBtn.dataset.shareTitle = name;
+    node.querySelector('.package-price')!.textContent = money(priceCents, cadence ?? undefined);
+    node.querySelector('.package-desc')!.textContent = truncate(description, 140);
+
+    if (Array.isArray(benefits) && benefits.length > 0) {
+      const list = node.querySelector('.package-benefits')!;
+      list.classList.remove('hidden');
+      for (const b of benefits) {
+        const li = document.createElement('li');
+        li.className = 'flex items-start gap-2';
+        li.innerHTML = '<span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-marigold-400"></span><span></span>';
+        li.querySelector('span:last-child')!.textContent = String(b);
+        list.appendChild(li);
+      }
+    }
+
+    const link = node.querySelector<HTMLAnchorElement>('.package-link')!;
+    link.href = url;
+
+    gridEl.appendChild(node);
+  }
+
+  (async () => {
+    try {
+      const packages = await fetchTweebleMembership();
+      if (!Array.isArray(packages) || packages.length === 0) {
+        emptyEl?.classList.remove('hidden');
+        return;
+      }
+      packages.forEach(renderPackage);
+    } catch (err) {
+      errorEl?.classList.remove('hidden');
+      console.error('Failed to load Tweeble membership packages', err);
+    } finally {
+      loadingEl?.remove();
+    }
+  })();
+</script>

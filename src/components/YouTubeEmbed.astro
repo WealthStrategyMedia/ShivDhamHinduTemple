@@ -1,0 +1,24 @@
+---
+// Responsive YouTube embed — `orientation="portrait"` for Shorts (9:16),
+// the default "landscape" for standard 16:9 video.
+interface Props {
+  id: string;
+  title: string;
+  orientation?: 'landscape' | 'portrait';
+  class?: string;
+}
+const { id, title, orientation = 'landscape', class: className = '' } = Astro.props;
+---
+
+<div class:list={['overflow-hidden rounded-2xl bg-ivory-100 shadow-lift', orientation === 'portrait' ? 'aspect-[9/16]' : 'aspect-video', className]}>
+  <iframe
+    class="h-full w-full"
+    src={`https://www.youtube.com/embed/${id}`}
+    title={title}
+    frameborder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    referrerpolicy="strict-origin-when-cross-origin"
+    loading="lazy"
+    allowfullscreen
+  ></iframe>
+</div>

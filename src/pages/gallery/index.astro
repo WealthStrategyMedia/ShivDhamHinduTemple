@@ -1,0 +1,132 @@
+---
+import { getEntry, render } from 'astro:content';
+import { Image, getImage } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+
+const page = await getEntry('pages', 'gallery');
+const { Content } = page ? await render(page) : { Content: null };
+
+// Every photo saved from the temple's own site, minus the logo/favicon/
+// placeholder graphics that aren't gallery content.
+const imageFiles = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/assets/gallery/*.{jpeg,jpg,png,webp}',
+  { eager: true },
+);
+
+function toCaption(path: string) {
+  const base = path.split('/').pop()!.replace(/\.[^.]+$/, '');
+  return base
+    .replace(/-(scaled|rktq[a-z0-9]+|q[a-z0-9]{20,})$/i, '')
+    .replace(/[-_]+/g, ' ')
+    .replace(/\b\d{6,}\b/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+const photos = Object.entries(imageFiles)
+  .map(([path, mod]) => ({ image: mod.default, caption: toCaption(path) }))
+  .sort((a, b) => a.caption.localeCompare(b.caption));
+
+// Full-size versions are generated but never rendered as <img> tags up
+// front — only their URL is embedded as a data attribute, so the browser
+// fetches a large photo only when someone actually opens the lightbox.
+const fullSize = await Promise.all(
+  photos.map((p) => getImage({ src: p.image, width: 1600, format: 'webp' })),
+);
+---
+
+<BaseLayout title="Gallery" description={page?.data.summary ?? 'Photos of the temple, its deities, and its festival celebrations.'}>
+  <PageHero
+    eyebrow="Visit"
+    title="Gallery"
+    description={page?.data.summary}
+    image={page?.data.hero}
+    imageAlt={page?.data.heroAlt}
+    compact
+  />
+
+  <div class="container-page py-16 sm:py-20">
+    {Content && (
+      <div class="prose-temple container-prose mx-auto mb-12 px-0 text-center">
+        <Content />
+      </div>
+    )}
+
+    <div class="columns-2 gap-3 sm:columns-3 sm:gap-4 lg:columns-4">
+      {photos.map((photo, i) => (
+        <button
+          type="button"
+          class="gallery-item group mb-3 block w-full break-inside-avoid overflow-hidden rounded-xl border border-ivory-200 bg-white sm:mb-4"
+          data-full={fullSize[i].src}
+          data-caption={photo.caption}
+          aria-label={`Enlarge photo: ${photo.caption}`}
+        >
+          <Image
+            src={photo.image}
+            alt={photo.caption}
+            width={480}
+            format="webp"
+            loading={i < 8 ? 'eager' : 'lazy'}
+            class="w-full transition duration-300 group-hover:scale-[1.03]"
+          />
+        </button>
+      ))}
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="fixed inset-0 z-[60] hidden items-center justify-center bg-maroon-900/90 p-4 backdrop-blur-sm sm:p-8" role="dialog" aria-modal="true" aria-label="Photo viewer">
+    <button type="button" id="lightbox-close" aria-label="Close" class="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-2xl text-white hover:bg-white/20">✕</button>
+    <button type="button" id="lightbox-prev" aria-label="Previous photo" class="absolute left-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-2xl text-white hover:bg-white/20 sm:left-6">‹</button>
+    <button type="button" id="lightbox-next" aria-label="Next photo" class="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-2xl text-white hover:bg-white/20 sm:right-6">›</button>
+    <figure class="flex max-h-full max-w-full flex-col items-center">
+      <img id="lightbox-img" src="" alt="" class="max-h-[80vh] max-w-full rounded-lg object-contain shadow-2xl" />
+      <figcaption id="lightbox-caption" class="mt-4 max-w-2xl text-center text-sm text-ivory-100"></figcaption>
+    </figure>
+  </div>
+</BaseLayout>
+
+<script>
+  const items = Array.from(document.querySelectorAll<HTMLButtonElement>('.gallery-item'));
+  const lightbox = document.getElementById('lightbox')!;
+  const lightboxImg = document.getElementById('lightbox-img') as HTMLImageElement;
+  const lightboxCaption = document.getElementById('lightbox-caption')!;
+  let current = -1;
+
+  function open(index: number) {
+    current = index;
+    const item = items[index];
+    lightboxImg.src = item.dataset.full ?? '';
+    lightboxImg.alt = item.dataset.caption ?? '';
+    lightboxCaption.textContent = item.dataset.caption ?? '';
+    lightbox.classList.remove('hidden');
+    lightbox.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function close() {
+    lightbox.classList.add('hidden');
+    lightbox.classList.remove('flex');
+    document.body.style.overflow = '';
+    current = -1;
+  }
+
+  function step(delta: number) {
+    if (current < 0) return;
+    open((current + delta + items.length) % items.length);
+  }
+
+  items.forEach((item, i) => item.addEventListener('click', () => open(i)));
+  document.getElementById('lightbox-close')?.addEventListener('click', close);
+  document.getElementById('lightbox-prev')?.addEventListener('click', () => step(-1));
+  document.getElementById('lightbox-next')?.addEventListener('click', () => step(1));
+  lightbox.addEventListener('click', (e) => { if (e.target === lightbox) close(); });
+  document.addEventListener('keydown', (e) => {
+    if (lightbox.classList.contains('hidden')) return;
+    if (e.key === 'Escape') close();
+    if (e.key === 'ArrowLeft') step(-1);
+    if (e.key === 'ArrowRight') step(1);
+  });
+</script>

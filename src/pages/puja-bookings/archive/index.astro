@@ -1,0 +1,84 @@
+---
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHero from '../../../components/PageHero.astro';
+import congregationHero from '../../../assets/photos/congregation-puja.jpg';
+
+const services = (await getCollection('services')).sort((a, b) => a.data.order - b.data.order);
+
+const CATEGORY_LABEL = {
+  samskara: 'Life-Cycle Ceremonies',
+  archana: 'Regular Worship',
+  homam: 'Fire Rituals',
+  shanti: 'Remedial & Planetary',
+  festival: 'Festival Sponsorship',
+  other: 'Other Services',
+};
+const CATEGORY_NOTE = {
+  samskara: 'The rites of passage that mark life’s milestones, from naming to marriage.',
+  archana: 'Devotional offerings performed regularly at the temple.',
+  homam: 'Fire rituals invoking specific deities for protection, healing, and blessings.',
+  shanti: 'Remedial rites to ease difficult planetary influences and restore balance.',
+  festival: 'Sponsorship offerings tied to a specific festival celebration.',
+  other: 'Additional services performed by the temple’s priests.',
+};
+const order = ['samskara', 'homam', 'archana', 'shanti', 'festival', 'other'];
+const grouped = order
+  .map((cat) => ({ cat, items: services.filter((s) => s.data.category === cat) }))
+  .filter((g) => g.items.length > 0);
+---
+
+<BaseLayout title="Temple Services Archive" description="A backup, locally-maintained list of temple services — the live, up-to-date list is at /puja-bookings/." noindex>
+  <PageHero
+    eyebrow="Archive"
+    title="Temple Services Archive"
+    description="A local backup of the temple's ceremonies and rituals. For live pricing and to book, see the main Temple Services page."
+    image={congregationHero}
+    imageAlt="Priests and devotees during worship at the temple"
+  >
+    <a href="/puja-bookings/" class="btn-primary mt-6">View Live Services</a>
+  </PageHero>
+
+  <div class="container-page py-16 sm:py-20">
+    {grouped.map((group, i) => (
+      <>
+        {i > 0 && (
+          <div class="section-break my-16">
+            <span class="font-display text-xl text-marigold-500">✦</span>
+          </div>
+        )}
+        <section>
+          <div class="max-w-xl">
+            <h2 class="text-maroon-700">{CATEGORY_LABEL[group.cat]}</h2>
+            <p class="mt-2 text-sm text-ivory-600">{CATEGORY_NOTE[group.cat]}</p>
+          </div>
+          <div class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {group.items.map((service) => (
+              <a href={`/puja-bookings/${service.id}/`} class="card-photo group">
+                {service.data.image ? (
+                  <Image src={service.data.image} alt={service.data.title} width={480} height={280} class="h-52" />
+                ) : (
+                  <div class="flex h-52 items-center justify-center bg-gradient-to-br from-maroon-600 to-maroon-800">
+                    <span class="font-display text-3xl text-marigold-200">ॐ</span>
+                  </div>
+                )}
+                <div class="p-6">
+                  <h3 class="font-display text-lg font-semibold text-maroon-700 group-hover:text-marigold-600">{service.data.title}</h3>
+                  <p class="mt-2 text-sm text-ivory-600 line-clamp-2">{service.data.summary}</p>
+                  <div class="mt-4 flex flex-wrap gap-2">
+                    {service.data.variants.map((v) => (
+                      <span class="rounded-full bg-ivory-100 px-3 py-1 text-xs font-medium text-maroon-700">
+                        {v.venue === 'home' ? 'At Home' : 'At Temple'}{v.price != null ? ` · $${v.price}` : ''}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      </>
+    ))}
+  </div>
+</BaseLayout>

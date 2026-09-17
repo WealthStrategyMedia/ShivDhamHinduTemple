@@ -1,0 +1,74 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Netlify Functions written in TypeScript, bundled with esbuild.
+[functions]
+  node_bundler = "esbuild"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# ---------------------------------------------------------------
+# Redirects from the legacy WordPress site's URL structure, so
+# existing links, bookmarks, and search rankings still resolve.
+# The legacy site kept deities and puja services at the top level;
+# the new site groups them for clearer navigation.
+# ---------------------------------------------------------------
+[[redirects]]
+  from = "/shri-ganapati/"
+  to = "/deities/shri-ganapati/"
+  status = 301
+
+[[redirects]]
+  from = "/shri-shiva/"
+  to = "/deities/shri-shiva/"
+  status = 301
+
+[[redirects]]
+  from = "/shri-durga/"
+  to = "/deities/shri-durga/"
+  status = 301
+
+[[redirects]]
+  from = "/shri-hanuman/"
+  to = "/deities/shri-hanuman/"
+  status = 301
+
+[[redirects]]
+  from = "/shri-radha-krishna/"
+  to = "/deities/shri-radha-krishna/"
+  status = 301
+
+[[redirects]]
+  from = "/shri-navagraha/"
+  to = "/deities/shri-navagraha/"
+  status = 301
+
+[[redirects]]
+  from = "/donations/"
+  to = "/online-donations/"
+  status = 301
+
+[[redirects]]
+  from = "/donations/*"
+  to = "/online-donations/"
+  status = 301
+
+[[redirects]]
+  from = "/tweeble/"
+  to = "/temple-hub/"
+  status = 301

@@ -1,0 +1,982 @@
+[
+  {
+    "date": "2026-01-01",
+    "festivals": [
+      "New Year"
+    ]
+  },
+  {
+    "date": "2026-01-02",
+    "festivals": [
+      "Shakambhari Purnima",
+      "Pausha Purnima",
+      "Anvadhan"
+    ]
+  },
+  {
+    "date": "2026-01-03",
+    "festivals": [
+      "Ishti",
+      "108 Hanuman Chalisa",
+      "Shamkambhri Purnima"
+    ]
+  },
+  {
+    "date": "2026-01-06",
+    "festivals": [
+      "Sakat Chauth",
+      "Lambodara Sankashti"
+    ]
+  },
+  {
+    "date": "2026-01-11",
+    "festivals": [
+      "Guru Jayanti"
+    ]
+  },
+  {
+    "date": "2026-01-14",
+    "festivals": [
+      "Makar Sankranti",
+      "Pongal",
+      "Shattila Ekadashi"
+    ]
+  },
+  {
+    "date": "2026-01-15",
+    "festivals": [
+      "Guru Pradosh Vratam"
+    ]
+  },
+  {
+    "date": "2026-01-18",
+    "festivals": [
+      "Mauni Amavas",
+      "Darsha Amavasya",
+      "Anvadhan",
+      "Magha Amavasya"
+    ]
+  },
+  {
+    "date": "2026-01-19",
+    "festivals": [
+      "Magha NaVratamri",
+      "Ishti",
+      "Chandra Darshana"
+    ]
+  },
+  {
+    "date": "2026-01-23",
+    "festivals": [
+      "Vasant Panchami"
+    ]
+  },
+  {
+    "date": "2026-01-25",
+    "festivals": [
+      "Bhanu Saptami",
+      "Ratha Spatami",
+      "Bishma Asthami"
+    ]
+  },
+  {
+    "date": "2026-01-28",
+    "festivals": [
+      "Jaya Ekadashi"
+    ]
+  },
+  {
+    "date": "2026-01-29",
+    "festivals": [
+      "Vaishnava Jaya Ekadashi"
+    ]
+  },
+  {
+    "date": "2026-01-30",
+    "festivals": [
+      "Shukra Pradosh Vratam"
+    ]
+  },
+  {
+    "date": "2026-02-01",
+    "festivals": [
+      "Magha Purnima",
+      "Anvadhan"
+    ]
+  },
+  {
+    "date": "2026-02-02",
+    "festivals": [
+      "Ishti"
+    ]
+  },
+  {
+    "date": "2026-02-04",
+    "festivals": [
+      "Dwijapriya Sankashti"
+    ]
+  },
+  {
+    "date": "2026-02-08",
+    "festivals": [
+      "Bhanu Saptami"
+    ]
+  },
+  {
+    "date": "2026-02-12",
+    "festivals": [
+      "Kumbha Sankranti",
+      "Vijaya Ekadashi"
+    ]
+  },
+  {
+    "date": "2026-02-14",
+    "festivals": [
+      "Shani Pradosh Vratam"
+    ]
+  },
+  {
+    "date": "2026-02-15",
+    "festivals": [
+      "Maha Shivaratri"
+    ]
+  },
+  {
+    "date": "2026-02-16",
+    "festivals": [
+      "Darsha Amavasya",
+      "Anvadhan"
+    ]
+  },
+  {
+    "date": "2026-02-17",
+    "festivals": [
+      "Surya Grahan *Valayakara",
+      "Ishti",
+      "Phalguna Amavasya"
+    ]
+  },
+  {
+    "date": "2026-02-18",
+    "festivals": [
+      "Phulera Dooj",
+      "Chandra Darshana"
+    ]
+  },
+  {
+    "date": "2026-02-27",
+    "festivals": [
+      "Amalaki Ekadashi"
+    ]
+  },
+  {
+    "date": "2026-02-28",
+    "festivals": [
+      "Shani Pradosh Vratam"
+    ]
+  },
+  {
+    "date": "2026-03-02",
+    "festivals": [
+      "Holika Dahan"
+    ]
+  },
+  {
+    "date": "2026-03-03",
+    "festivals": [
+      "Holi"
+    ]
+  },
+  {
+    "date": "2026-03-08",
+    "festivals": [
+      "Rang Panchami"
+    ]
+  },
+  {
+    "date": "2026-03-14",
+    "festivals": [
+      "Papamochini Ekadashi",
+      "Meen Sankranti"
+    ]
+  },
+  {
+    "date": "2026-03-16",
+    "festivals": [
+      "Soma Pradosh Vratam"
+    ]
+  },
+  {
+    "date": "2026-03-18",
+    "festivals": [
+      "Amavasya"
+    ]
+  },
+  {
+    "date": "2026-03-19",
+    "festivals": [
+      "Chaitra Navratri Start (Ugadi)"
+    ]
+  },
+  {
+    "date": "2026-03-21",
+    "festivals": [
+      "Gauri Pooja"
+    ]
+  },
+  {
+    "date": "2026-03-22",
+    "festivals": [
+      "Lakshmi Panchami"
+    ]
+  },
+  {
+    "date": "2026-03-26",
+    "festivals": [
+      "Ram Navmi"
+    ]
+  },
+  {
+    "date": "2026-03-28",
+    "festivals": [
+      "Kamada Ekadashi"
+    ]
+  },
+  {
+    "date": "2026-03-30",
+    "festivals": [
+      "Som Pradosh Vratam"
+    ]
+  },
+  {
+    "date": "2026-04-01",
+    "festivals": [
+      "Hanuman Jayanti",
+      "SatyaNarayan Pooja"
+    ]
+  },
+  {
+    "date": "2026-04-05",
+    "festivals": [
+      "Ganesh Chaturthi",
+      "Vikata Sankashthi Chaturthi"
+    ]
+  },
+  {
+    "date": "2026-04-13",
+    "festivals": [
+      "Papamochini Ekadashi",
+      "Mesha Sankranti"
+    ]
+  },
+  {
+    "date": "2026-04-14",
+    "festivals": [
+      "Bhaum Pradosh Vratam"
+    ]
+  },
+  {
+    "date": "2026-04-17",
+    "festivals": [
+      "Amavasya"
+    ]
+  },
+  {
+    "date": "2026-04-19",
+    "festivals": [
+      "Akshya Tritya",
+      "Parshuram Jayanti"
+    ]
+  },
+  {
+    "date": "2026-04-20",
+    "festivals": [
+      "Chatuthi Vratam"
+    ]
+  },
+  {
+    "date": "2026-04-25",
+    "festivals": [
+      "Sita Navmi"
+    ]
+  },
+  {
+    "date": "2026-04-27",
+    "festivals": [
+      "Mohini Ekadashi"
+    ]
+  },
+  {
+    "date": "2026-04-28",
+    "festivals": [
+      "Bhaum Pradosh Vratam"
+    ]
+  },
+  {
+    "date": "2026-04-29",
+    "festivals": [
+      "Narasimha Jayanti"
+    ]
+  },
+  {
+    "date": "2026-04-30",
+    "festivals": [
+      "Kurma Jayanti"
+    ]
+  },
+  {
+    "date": "2026-05-01",
+    "festivals": [
+      "Budh Purnima"
+    ]
+  },
+  {
+    "date": "2026-05-02",
+    "festivals": [
+      "Narad Jayanti"
+    ]
+  },
+  {
+    "date": "2026-05-05",
+    "festivals": [
+      "Ganesh Chaturthi (Ekadanta Sankasthi)"
+    ]
+  },
+  {
+    "date": "2026-05-10",
+    "festivals": [
+      "Mother’s Day"
+    ]
+  },
+  {
+    "date": "2026-05-12",
+    "festivals": [
+      "Apara Ekadashi"
+    ]
+  },
+  {
+    "date": "2026-05-14",
+    "festivals": [
+      "Guru Pradosh Vratam",
+      "Vrishabha Sankranti"
+    ]
+  },
+  {
+    "date": "2026-05-16",
+    "festivals": [
+      "Amavasya Shani Jayanti",
+      "Vat Savitri Vratam"
+    ]
+  },
+  {
+    "date": "2026-05-19",
+    "festivals": [
+      "Ganesh Chaturthi"
+    ]
+  },
+  {
+    "date": "2026-05-25",
+    "festivals": [
+      "Ganga Dashara"
+    ]
+  },
+  {
+    "date": "2026-05-26",
+    "festivals": [
+      "Padma Ekadashi"
+    ]
+  },
+  {
+    "date": "2026-05-28",
+    "festivals": [
+      "Guru Pradosh Vratam"
+    ]
+  },
+  {
+    "date": "2026-05-30",
+    "festivals": [
+      "Jyestha (Adhik) Purnima"
+    ]
+  },
+  {
+    "date": "2026-06-11",
+    "festivals": [
+      "Parama Ekadashi"
+    ]
+  },
+  {
+    "date": "2026-06-12",
+    "festivals": [
+      "Shukra Pradosh Vratam"
+    ]
+  },
+  {
+    "date": "2026-06-14",
+    "festivals": [
+      "Jyestha Adhik Amavasya"
+    ]
+  },
+  {
+    "date": "2026-06-15",
+    "festivals": [
+      "Mithun Sankranti",
+      "Father’s Day"
+    ]
+  },
+  {
+    "date": "2026-06-21",
+    "festivals": [
+      "International Yoga Day",
+      "Bhanu Saptami"
+    ]
+  },
+  {
+    "date": "2026-06-25",
+    "festivals": [
+      "Nirjala Ekadashi",
+      "Gayatri Jayanti"
+    ]
+  },
+  {
+    "date": "2026-06-26",
+    "festivals": [
+      "Shukra Pradosh Vratam"
+    ]
+  },
+  {
+    "date": "2026-06-28",
+    "festivals": [
+      "SatyaNarayan Pooja"
+    ]
+  },
+  {
+    "date": "2026-06-29",
+    "festivals": [
+      "Jyestha Purnima"
+    ]
+  },
+  {
+    "date": "2026-07-03",
+    "festivals": [
+      "Ganesh Chaturthi"
+    ]
+  },
+  {
+    "date": "2026-07-10",
+    "festivals": [
+      "Yogini Ekadashi"
+    ]
+  },
+  {
+    "date": "2026-07-11",
+    "festivals": [
+      "Shani Pradosh Vratam"
+    ]
+  },
+  {
+    "date": "2026-07-14",
+    "festivals": [
+      "Asadha Amavasya"
+    ]
+  },
+  {
+    "date": "2026-07-15",
+    "festivals": [
+      "Rath Yatra"
+    ]
+  },
+  {
+    "date": "2026-07-16",
+    "festivals": [
+      "Karka Sankranti"
+    ]
+  },
+  {
+    "date": "2026-07-17",
+    "festivals": [
+      "Ganesh Chaturthi"
+    ]
+  },
+  {
+    "date": "2026-07-24",
+    "festivals": [
+      "Devashayani Ekadashi"
+    ]
+  },
+  {
+    "date": "2026-07-26",
+    "festivals": [
+      "Ravi Pradosh Vratam"
+    ]
+  },
+  {
+    "date": "2026-07-29",
+    "festivals": [
+      "Guru Purnima"
+    ]
+  },
+  {
+    "date": "2026-08-02",
+    "festivals": [
+      "Ganesh Chaturthi"
+    ]
+  },
+  {
+    "date": "2026-08-03",
+    "festivals": [
+      "1st Sravan Somwar"
+    ]
+  },
+  {
+    "date": "2026-08-08",
+    "festivals": [
+      "Kamika Ekadashi"
+    ]
+  },
+  {
+    "date": "2026-08-10",
+    "festivals": [
+      "Bhaum Pradosh Vratam"
+    ]
+  },
+  {
+    "date": "2026-08-12",
+    "festivals": [
+      "Shravan Amavasya"
+    ]
+  },
+  {
+    "date": "2026-08-15",
+    "festivals": [
+      "Hariyali Teej"
+    ]
+  },
+  {
+    "date": "2026-08-16",
+    "festivals": [
+      "Simha Sankranti"
+    ]
+  },
+  {
+    "date": "2026-08-17",
+    "festivals": [
+      "Nag Panchami/ Kalki Jayanti"
+    ]
+  },
+  {
+    "date": "2026-08-19",
+    "festivals": [
+      "Tulsi Jayanti"
+    ]
+  },
+  {
+    "date": "2026-08-21",
+    "festivals": [
+      "Varalakshmi Vratam"
+    ]
+  },
+  {
+    "date": "2026-08-23",
+    "festivals": [
+      "Putrada Ekadashi"
+    ]
+  },
+  {
+    "date": "2026-08-25",
+    "festivals": [
+      "Bhaum Pradosh Vratam"
+    ]
+  },
+  {
+    "date": "2026-08-27",
+    "festivals": [
+      "Shravan Purnima",
+      "SatyaNarayan Pooja"
+    ]
+  },
+  {
+    "date": "2026-08-28",
+    "festivals": [
+      "Raksha Bandhan"
+    ]
+  },
+  {
+    "date": "2026-08-30",
+    "festivals": [
+      "Kajari Teej"
+    ]
+  },
+  {
+    "date": "2026-08-31",
+    "festivals": [
+      "Bahula Chaturthi Vratam"
+    ]
+  },
+  {
+    "date": "2026-09-03",
+    "festivals": [
+      "Krishna Janmastami"
+    ]
+  },
+  {
+    "date": "2026-09-07",
+    "festivals": [
+      "Aja Ekadashi"
+    ]
+  },
+  {
+    "date": "2026-09-08",
+    "festivals": [
+      "Bhaum Pradosh Vratam"
+    ]
+  },
+  {
+    "date": "2026-09-10",
+    "festivals": [
+      "Bhadrapad (Pithori) Amavasya 13 Sept - Hartalika Teej Varah Jayanti"
+    ]
+  },
+  {
+    "date": "2026-09-14",
+    "festivals": [
+      "Ganesh (Kalank Chaturthi",
+      "don’t look at the moon)",
+      "Ganesh Sthapna",
+      "Hindi Diwas"
+    ]
+  },
+  {
+    "date": "2026-09-15",
+    "festivals": [
+      "Rishi Panchami"
+    ]
+  },
+  {
+    "date": "2026-09-16",
+    "festivals": [
+      "Kanya Sankranti",
+      "Vishvakarma Pooja"
+    ]
+  },
+  {
+    "date": "2026-09-17",
+    "festivals": [
+      "Lalita Saptami"
+    ]
+  },
+  {
+    "date": "2026-09-18",
+    "festivals": [
+      "Durva (Radha) Astmi Maha Lakshmi Vratamam Begins"
+    ]
+  },
+  {
+    "date": "2026-09-20",
+    "festivals": [
+      "Ganesh Visarjan @ ShivDham"
+    ]
+  },
+  {
+    "date": "2026-09-22",
+    "festivals": [
+      "Parsva Ekadashi",
+      "Vamana Jayanti"
+    ]
+  },
+  {
+    "date": "2026-09-23",
+    "festivals": [
+      "Bhaum Pradosh Vratam 25 Sept - Anant Chaturdashi 26 Sept - Bhadrapad Purnima",
+      "SatyaNarayan Pooja 27 Sept - Pitri Paksha Begins 29 Sept - Ganesh Chaturthi"
+    ]
+  },
+  {
+    "date": "2026-10-02",
+    "festivals": [
+      "Maha Lakshmi Vratamam ends"
+    ]
+  },
+  {
+    "date": "2026-10-03",
+    "festivals": [
+      "Jivit Putra Vratamam"
+    ]
+  },
+  {
+    "date": "2026-10-06",
+    "festivals": [
+      "Indira Ekadashi"
+    ]
+  },
+  {
+    "date": "2026-10-07",
+    "festivals": [
+      "Budha Pradosh Vratamam"
+    ]
+  },
+  {
+    "date": "2026-10-10",
+    "festivals": [
+      "Sarva Pitri Amavasya (Samuhik Tarpan)"
+    ]
+  },
+  {
+    "date": "2026-10-11",
+    "festivals": [
+      "Navratri Begins (Ghat Sthapna)"
+    ]
+  },
+  {
+    "date": "2026-10-14",
+    "festivals": [
+      "Ganesh Chaturthi",
+      "Upang Lalita Vratam"
+    ]
+  },
+  {
+    "date": "2026-10-16",
+    "festivals": [
+      "Saraswati Avahan"
+    ]
+  },
+  {
+    "date": "2026-10-17",
+    "festivals": [
+      "Saraswati Pooja",
+      "Tula Sankranti"
+    ]
+  },
+  {
+    "date": "2026-10-18",
+    "festivals": [
+      "Durga Astmi"
+    ]
+  },
+  {
+    "date": "2026-10-19",
+    "festivals": [
+      "Maha Navmi",
+      "Saraswati Visarjan"
+    ]
+  },
+  {
+    "date": "2026-10-20",
+    "festivals": [
+      "Vijya Dashmi (Dashahra)"
+    ]
+  },
+  {
+    "date": "2026-10-21",
+    "festivals": [
+      "Papankusha Ekadashi"
+    ]
+  },
+  {
+    "date": "2026-10-23",
+    "festivals": [
+      "Shukra Pradosh Vratamam"
+    ]
+  },
+  {
+    "date": "2026-10-25",
+    "festivals": [
+      "Sharad Purnima",
+      "SatyaNarayan Pooja"
+    ]
+  },
+  {
+    "date": "2026-10-28",
+    "festivals": [
+      "Karwa Chauth"
+    ]
+  },
+  {
+    "date": "2026-11-01",
+    "festivals": [
+      "Ahoi Astmi"
+    ]
+  },
+  {
+    "date": "2026-11-04",
+    "festivals": [
+      "Rama Ekadashi"
+    ]
+  },
+  {
+    "date": "2026-11-05",
+    "festivals": [
+      "Govatsa Dwadashi"
+    ]
+  },
+  {
+    "date": "2026-11-06",
+    "festivals": [
+      "Dhan Teras",
+      "Pradosh Vratam"
+    ]
+  },
+  {
+    "date": "2026-11-07",
+    "festivals": [
+      "Kali Chaudas (Choti Diwali)"
+    ]
+  },
+  {
+    "date": "2026-11-08",
+    "festivals": [
+      "Kartik Amavasya",
+      "Diwali"
+    ]
+  },
+  {
+    "date": "2026-11-09",
+    "festivals": [
+      "Govardhan Pooja"
+    ]
+  },
+  {
+    "date": "2026-11-10",
+    "festivals": [
+      "Bhai Dooj",
+      "Gujarati New Year"
+    ]
+  },
+  {
+    "date": "2026-11-14",
+    "festivals": [
+      "Children's Day"
+    ]
+  },
+  {
+    "date": "2026-11-15",
+    "festivals": [
+      "Annkoot @Shivdham",
+      "Chath Pooja"
+    ]
+  },
+  {
+    "date": "2026-11-16",
+    "festivals": [
+      "Vrischik Sankranti"
+    ]
+  },
+  {
+    "date": "2026-11-17",
+    "festivals": [
+      "Gopastmi ( Gow Pooja)"
+    ]
+  },
+  {
+    "date": "2026-11-18",
+    "festivals": [
+      "Akshaya Navmi"
+    ]
+  },
+  {
+    "date": "2026-11-19",
+    "festivals": [
+      "Kansa Vadh"
+    ]
+  },
+  {
+    "date": "2026-11-20",
+    "festivals": [
+      "Dev Uthan Ekadashi"
+    ]
+  },
+  {
+    "date": "2026-11-21",
+    "festivals": [
+      "Shani Pradosh Vratamam",
+      "Tulsi Vivah"
+    ]
+  },
+  {
+    "date": "2026-11-23",
+    "festivals": [
+      "Vaikunth Chaturdashi",
+      "Dev Diwali ( Deep Daan) SatyaNarayan Pooja"
+    ]
+  },
+  {
+    "date": "2026-11-24",
+    "festivals": [
+      "Kartik Purnima"
+    ]
+  },
+  {
+    "date": "2026-11-27",
+    "festivals": [
+      "Ganesh Chaturthi Vratam"
+    ]
+  },
+  {
+    "date": "2026-11-30",
+    "festivals": [
+      "Kal Bhairav Jayanti"
+    ]
+  },
+  {
+    "date": "2026-12-04",
+    "festivals": [
+      "Utpanna Ekadashi"
+    ]
+  },
+  {
+    "date": "2026-12-05",
+    "festivals": [
+      "Shani Pradosh Vratam"
+    ]
+  },
+  {
+    "date": "2026-12-08",
+    "festivals": [
+      "Margashirsha Amavasya"
+    ]
+  },
+  {
+    "date": "2026-12-13",
+    "festivals": [
+      "Vivah Panchami"
+    ]
+  },
+  {
+    "date": "2026-12-16",
+    "festivals": [
+      "Dhanu Sankranti"
+    ]
+  },
+  {
+    "date": "2026-12-19",
+    "festivals": [
+      "Gita Jayanti"
+    ]
+  },
+  {
+    "date": "2026-12-20",
+    "festivals": [
+      "Gita Jayanti",
+      "Mokshda Ekadashi"
+    ]
+  },
+  {
+    "date": "2026-12-21",
+    "festivals": [
+      "Som Pradosh Vratam"
+    ]
+  },
+  {
+    "date": "2026-12-23",
+    "festivals": [
+      "Margshirsh Purnima",
+      "Dattatreya Jayanti",
+      "SatyaNarayan Pooja"
+    ]
+  },
+  {
+    "date": "2026-12-26",
+    "festivals": [
+      "Ganesh Chaturthi"
+    ]
+  }
+]

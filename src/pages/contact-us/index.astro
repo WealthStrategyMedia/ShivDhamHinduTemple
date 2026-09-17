@@ -1,0 +1,81 @@
+---
+import { getEntry, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ContactForm from '../../components/ContactForm.astro';
+import PageHero from '../../components/PageHero.astro';
+import { SITE } from '../../lib/site';
+
+const page = await getEntry('pages', 'contact-us');
+const { Content } = page ? await render(page) : { Content: null };
+const mapSrc = `https://maps.google.com/maps?q=${encodeURIComponent(SITE.address.full)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+---
+
+<BaseLayout title="Contact Us" description={page?.data.summary}>
+  <PageHero eyebrow={SITE.shortName} title="Contact Us" description={page?.data.summary} image={page?.data.hero} imageAlt={page?.data.heroAlt} compact />
+
+  <div class="container-page py-16 sm:py-20">
+    <div class="grid gap-10 lg:grid-cols-[3fr_2fr] lg:items-start">
+      <div class="space-y-10">
+        {Content && <div class="prose-temple"><Content /></div>}
+
+        <div>
+          <h2 class="text-maroon-700">Send a Message</h2>
+          <p class="mt-2 text-sm text-ivory-600">We're happy to answer questions about worship timings, puja bookings, festivals, classes, or volunteering.</p>
+          <div class="mt-6">
+            <ContactForm />
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-6 lg:sticky lg:top-24">
+        <div class="card p-6">
+          <h2 class="font-display text-lg font-semibold text-maroon-700">Reach Us Directly</h2>
+          <dl class="mt-4 space-y-4 text-sm">
+            <div class="flex items-start gap-3">
+              <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-marigold-100 text-maroon-600">📞</span>
+              <div>
+                <dt class="text-xs uppercase tracking-wide text-ivory-500">Phone</dt>
+                <dd><a href={SITE.phoneHref} class="font-medium text-maroon-700 hover:underline">{SITE.phone}</a></dd>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-marigold-100 text-maroon-600">✉️</span>
+              <div>
+                <dt class="text-xs uppercase tracking-wide text-ivory-500">Email</dt>
+                <dd><a href={`mailto:${SITE.email}`} class="font-medium text-maroon-700 hover:underline break-all">{SITE.email}</a></dd>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-marigold-100 text-maroon-600">📍</span>
+              <div>
+                <dt class="text-xs uppercase tracking-wide text-ivory-500">Address</dt>
+                <dd class="font-medium text-ivory-800">{SITE.address.full}</dd>
+              </div>
+            </div>
+          </dl>
+          <a href={SITE.address.mapsUrl} target="_blank" rel="noopener" class="btn-primary mt-6 w-full">Get Directions</a>
+        </div>
+
+        <div class="card overflow-hidden">
+          <iframe
+            title="Map to Shri Shiv Dham Hindu Temple"
+            src={mapSrc}
+            width="100%"
+            height="260"
+            style="border:0; display:block;"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+          ></iframe>
+        </div>
+
+        <div class="card p-6">
+          <h2 class="font-display text-lg font-semibold text-maroon-700">Temple Hours</h2>
+          <ul class="mt-4 space-y-2 text-sm text-ivory-700">
+            <li class="flex justify-between border-b border-ivory-100 pb-2"><span>Mon – Fri</span><span>8:00 AM – 12:30 PM, 5 – 8:30 PM</span></li>
+            <li class="flex justify-between pt-0.5"><span>Sat – Sun</span><span>8:00 AM – 8:30 PM</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

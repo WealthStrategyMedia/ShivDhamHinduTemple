@@ -1,0 +1,110 @@
+---
+import { getCollection, render } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+
+export async function getStaticPaths() {
+  const services = await getCollection('services');
+  return services.map((service) => ({ params: { slug: service.id }, props: { service } }));
+}
+
+const { service } = Astro.props;
+const { Content } = await render(service);
+
+const CATEGORY_LABEL: Record<string, string> = {
+  samskara: 'Life-Cycle Ceremony',
+  archana: 'Regular Worship',
+  homam: 'Fire Ritual',
+  shanti: 'Remedial & Planetary',
+  festival: 'Festival Sponsorship',
+  other: 'Temple Service',
+};
+
+// A generic "Book a Puja" button doesn't mean much to a visitor who isn't
+// already fluent in the term, and reads oddly for a $3 color packet or a
+// vendor-booth registration. Compute something that names the actual
+// action, unless the content author overrode it directly.
+const actionLabel =
+  service.data.actionLabel ??
+  (service.data.actionVerb === 'purchase'
+    ? `Purchase ${service.data.title}`
+    : service.data.actionVerb === 'register'
+      ? `Register: ${service.data.title}`
+      : service.data.category === 'samskara'
+        ? `Book ${service.data.title} Ceremony`
+        : `Book ${service.data.title}`);
+
+// Shared reasons to book through the temple rather than elsewhere, shown
+// on every service page unless that specific service overrides them
+// (e.g. cremation, where a sales pitch would read as tone-deaf).
+const DEFAULT_WHY = [
+  'Performed by full-fledged, Vedic-trained Purohits, not a generalist officiant',
+  'Priests fluent in Sanskrit, Hindi, Telugu, Tamil, Kannada, and English',
+  'Every gift, in any amount, directly supports the temple’s worship and community programs',
+  'Choose the temple’s shrine or invite the priest to your home',
+];
+const whyThisTemple = service.data.whyThisTemple ?? DEFAULT_WHY;
+---
+
+<BaseLayout title={service.data.title} description={service.data.summary}>
+  <PageHero
+    eyebrow={CATEGORY_LABEL[service.data.category] ?? service.data.category}
+    title={service.data.title}
+    compact
+  >
+    {service.data.duration && <p class="mt-3 text-sm text-ivory-100">Approximate duration: {service.data.duration}</p>}
+  </PageHero>
+
+  <div class="container-page grid gap-10 py-14 sm:py-16 lg:grid-cols-[3fr_2fr] lg:items-start">
+    <div class="min-w-0">
+      <article class="prose-temple">
+        <Content />
+      </article>
+
+      <div class="mt-10 rounded-2xl border border-ivory-200 bg-white p-6 sm:p-8">
+        <h2 class="text-lg text-maroon-700">Why Book Through Shri Shiv Dham</h2>
+        <ul class="mt-4 grid gap-3 sm:grid-cols-2">
+          {whyThisTemple.map((reason) => (
+            <li class="flex items-start gap-2.5 text-sm text-ivory-700">
+              <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-marigold-400"></span>
+              {reason}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+
+    <aside class="lg:sticky lg:top-24">
+      {service.data.image && (
+        <div class="overflow-hidden rounded-2xl shadow-lift">
+          <Image src={service.data.image} alt={service.data.title} width={640} height={640} class="aspect-square w-full object-cover" />
+        </div>
+      )}
+      <div class:list={['card p-6', service.data.image && 'mt-6']}>
+        <h2 class="font-display text-lg font-semibold text-maroon-700">Options &amp; Pricing</h2>
+        <ul class="mt-4 space-y-3">
+          {service.data.variants.map((v) => (
+            <li class="flex items-center justify-between gap-3 rounded-xl border border-ivory-200 bg-ivory-50 px-4 py-3">
+              <span class="text-sm font-medium text-ivory-800">
+                {v.venue === 'home' ? 'At Your Home' : 'At the Temple'}
+                {v.note && <span class="mt-0.5 block text-xs font-normal text-ivory-500">{v.note}</span>}
+              </span>
+              <span class="shrink-0 font-display text-lg font-semibold text-maroon-700">
+                {v.price != null ? (v.price === 0 ? 'By Donation' : `$${v.price}`) : 'Contact us'}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <a href={`/contact-us/?service=${encodeURIComponent(service.data.title)}`} class="btn-primary mt-6 w-full">
+          {actionLabel}
+        </a>
+        <p class="mt-3 text-center text-xs text-ivory-500">
+          Online payment is coming soon. For now, requests are confirmed by the temple office.
+        </p>
+      </div>
+
+      <a href="/puja-bookings/" class="mt-4 block text-center text-sm font-semibold text-maroon-700 hover:underline">← All Temple Services</a>
+    </aside>
+  </div>
+</BaseLayout>

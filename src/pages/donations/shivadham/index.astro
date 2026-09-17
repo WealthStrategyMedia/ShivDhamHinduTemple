@@ -1,0 +1,23 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import DonationForm from '../../../components/DonationForm.astro';
+import PageHero from '../../../components/PageHero.astro';
+---
+
+<BaseLayout title="Shivadham Fund" description="Support the temple's core mission and facilities.">
+  <PageHero eyebrow="Give" title="Shivadham Fund" description="Supports the temple's core mission and facilities." compact />
+
+  <div class="container-page grid gap-12 py-14 lg:grid-cols-[3fr_2fr]">
+    <article class="prose-temple">
+      <p>
+        The Shivadham Fund supports the temple's core mission and its physical home: the shrines, worship spaces, and facilities that make Shri Shiv Dham a spiritual home for Central Florida's Hindu community.
+      </p>
+      <p>
+        Looking for a different fund? See <a href="/donations/">General Fund</a> or <a href="/support-the-temple-garden/">Temple Garden</a>, or visit <a href="/online-donations/">Online Donations</a> for all giving options.
+      </p>
+    </article>
+    <div>
+      <DonationForm fund="Shivadham" />
+    </div>
+  </div>
+</BaseLayout>

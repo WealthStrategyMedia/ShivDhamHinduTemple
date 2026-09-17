@@ -1,0 +1,198 @@
+---
+import { getCollection, render } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import BuyButton from '../components/BuyButton.astro';
+import Mandala from '../components/Mandala.astro';
+import { SITE } from '../lib/site';
+
+// Serves two flat, top-level collections at the same route level:
+// - `pages`: general editorial content (about, facilities, policies, ...)
+// - `programs`: ongoing classes, which also live at flat URLs like
+//   /yoga-classes/ to match the site's existing information architecture.
+export async function getStaticPaths() {
+  // Slugs served by their own dedicated route file instead of this generic
+  // one — that dedicated file needs more than the plain page template (e.g.
+  // contact-us/index.astro adds the working contact form). Declared inside
+  // getStaticPaths because Astro extracts this function into its own
+  // isolated module at build time, which does not carry along top-level
+  // frontmatter statements declared outside of it.
+  const OWN_ROUTE_SLUGS = new Set([
+    'contact-us',
+    'online-donations',
+    'religious-dates-and-festivals',
+    'gallery',
+    'guruji-biography',
+    'volunteering',
+    'your-voice-matters',
+    'summer-camp-registration-form',
+    'temple-facilities',
+    'canteen',
+    'temple-projects',
+    'temple-store',
+    'faq',
+    'brahmrishi-mission-centres-india-and-abroad',
+    'membership-drive',
+  ]);
+
+  const pages = (await getCollection('pages')).filter((entry) => !OWN_ROUTE_SLUGS.has(entry.id));
+  const programs = await getCollection('programs');
+
+  const pageEntries = pages.map((entry) => ({
+    params: { slug: entry.id.replace(/\/index$/, '') },
+    props: { kind: 'page', entry },
+  }));
+
+  const programEntries = programs.map((entry) => ({
+    params: { slug: entry.id },
+    props: { kind: 'program', entry },
+  }));
+
+  return [...pageEntries, ...programEntries];
+}
+
+const { kind, entry } = Astro.props;
+const { Content } = await render(entry);
+const title = kind === 'page' ? (entry.data.seoTitle ?? entry.data.title) : entry.data.title;
+const description = kind === 'page' ? (entry.data.seoDescription ?? entry.data.summary) : entry.data.summary;
+const heroImage = kind === 'page' ? entry.data.hero : entry.data.image;
+const heroImageAlt = kind === 'page' ? entry.data.heroAlt : entry.data.title;
+const hasFee = kind === 'program' && 'feeAmount' in entry.data && entry.data.feeAmount;
+
+// Every page gets a sidebar, not just ones with a registration fee — a
+// page with only prose and a header reads as unfinished. Programs without
+// a fee get their practical details plus an enroll CTA; general pages get
+// a "keep exploring" card so the page never just dead-ends in text.
+const allPrograms = kind === 'program' ? await getCollection('programs') : [];
+const relatedPrograms = allPrograms
+  .filter((p) => p.id !== entry.id)
+  .sort((a, b) => a.data.order - b.data.order)
+  .slice(0, 3);
+
+const EXPLORE_MORE = [
+  { label: 'Temple Services', href: '/puja-bookings/', blurb: 'Book a ceremony, homam, or life-cycle ritual.' },
+  { label: 'Events Calendar', href: '/events/', blurb: "See what's happening at the temple this month." },
+  { label: 'Make a Donation', href: '/online-donations/', blurb: "Support the temple's worship and community programs." },
+].filter((l) => l.href !== `/${entry.id}/`);
+---
+
+<BaseLayout title={title} description={description} noindex={kind === 'page' ? entry.data.noindex : false}>
+  <PageHero
+    eyebrow={kind === 'program' ? 'Programs' : SITE.shortName}
+    title={entry.data.title}
+    description={entry.data.summary}
+    image={heroImage}
+    imageAlt={heroImageAlt}
+    compact
+  >
+    {kind === 'program' && (entry.data.schedule || entry.data.cost) && (
+      <dl class="mt-6 flex flex-wrap gap-x-8 gap-y-2 text-sm text-ivory-100">
+        {entry.data.schedule && (
+          <div><dt class="inline font-semibold text-marigold-300">Schedule: </dt><dd class="inline">{entry.data.schedule}</dd></div>
+        )}
+        {entry.data.cost && (
+          <div><dt class="inline font-semibold text-marigold-300">Cost: </dt><dd class="inline">{entry.data.cost}</dd></div>
+        )}
+      </dl>
+    )}
+  </PageHero>
+  <div class="container-page py-14 sm:py-16">
+    <div class="grid gap-10 lg:grid-cols-[3fr_2fr] lg:items-start">
+      <article class="container-prose mx-0 max-w-none px-0">
+        <div class="prose-temple">
+          <Content />
+        </div>
+      </article>
+
+      <aside class="lg:sticky lg:top-24 space-y-6">
+        {hasFee ? (
+          <div class="card p-6">
+            <h2 class="font-display text-lg font-semibold text-maroon-700">Registration</h2>
+            <p class="mt-2 text-sm text-ivory-600">{entry.data.cost}</p>
+            <div class="mt-5">
+              <BuyButton
+                amount={entry.data.feeAmount!}
+                description={`${entry.data.title} — Registration`}
+                label={`Pay $${entry.data.feeAmount}`}
+                stripePriceId={entry.data.stripePriceId}
+                metadata={{ program: entry.data.title }}
+              />
+            </div>
+            <p class="mt-3 text-center text-xs text-ivory-500">Have questions first? <a href="/contact-us/" class="underline">Contact the temple office</a>.</p>
+          </div>
+        ) : kind === 'program' ? (
+          <div class="card p-6">
+            <h2 class="font-display text-lg font-semibold text-maroon-700">Program Details</h2>
+            <dl class="mt-4 space-y-3 text-sm">
+              <div class="flex items-start justify-between gap-3 rounded-xl border border-ivory-200 bg-ivory-50 px-4 py-3">
+                <dt class="font-medium text-ivory-800">Schedule</dt>
+                <dd class="text-right text-ivory-600">{entry.data.schedule ?? 'Contact the office for the current schedule'}</dd>
+              </div>
+              <div class="flex items-start justify-between gap-3 rounded-xl border border-ivory-200 bg-ivory-50 px-4 py-3">
+                <dt class="font-medium text-ivory-800">Ages</dt>
+                <dd class="text-right text-ivory-600">{entry.data.ageRange ?? 'All welcome'}</dd>
+              </div>
+              <div class="flex items-start justify-between gap-3 rounded-xl border border-ivory-200 bg-ivory-50 px-4 py-3">
+                <dt class="font-medium text-ivory-800">Cost</dt>
+                <dd class="text-right text-ivory-600">{entry.data.cost ?? 'Free'}</dd>
+              </div>
+            </dl>
+            <a href="/contact-us/" class="btn-primary mt-6 w-full">Contact the Temple Office to Enroll</a>
+          </div>
+        ) : (
+          <div class="hero-pattern relative overflow-hidden rounded-2xl p-6">
+            <Mandala class="mandala-decor" opacity={0.18} />
+            <div class="relative z-10">
+              <h2 class="font-display text-lg font-semibold text-white">Have a Question?</h2>
+              <p class="mt-2 text-sm text-ivory-100">The temple office is happy to help with anything not covered here.</p>
+              <a href="/contact-us/" class="btn-primary mt-5 w-full">Contact Us</a>
+            </div>
+          </div>
+        )}
+
+        {kind === 'page' && (
+          <div class="card p-6">
+            <h2 class="font-display text-base font-semibold text-maroon-700">Keep Exploring</h2>
+            <ul class="mt-4 space-y-3">
+              {EXPLORE_MORE.map((l) => (
+                <li>
+                  <a href={l.href} class="block rounded-xl border border-ivory-200 bg-ivory-50 px-4 py-3 transition hover:border-marigold-300 hover:bg-marigold-50">
+                    <span class="block text-sm font-semibold text-maroon-700">{l.label}</span>
+                    <span class="block text-xs text-ivory-500">{l.blurb}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </aside>
+    </div>
+
+    {kind === 'program' && relatedPrograms.length > 0 && (
+      <div class="mt-16">
+        <div class="section-break mb-12">
+          <span class="font-display text-xl text-marigold-500">✦</span>
+        </div>
+        <h2 class="text-maroon-700">Other Programs</h2>
+        <div class="mt-8 grid gap-6 sm:grid-cols-3">
+          {relatedPrograms.map((program) => (
+            <a href={`/${program.id}/`} class="card-photo group">
+              {program.data.image ? (
+                <Image src={program.data.image} alt={program.data.title} width={480} height={280} class="h-44" />
+              ) : (
+                <div class="flex h-44 items-center justify-center bg-gradient-to-br from-maroon-600 to-maroon-800">
+                  <span class="font-display text-3xl text-marigold-200">ॐ</span>
+                </div>
+              )}
+              <div class="p-5">
+                <h3 class="font-display text-base font-semibold text-maroon-700 group-hover:text-marigold-600">{program.data.title}</h3>
+                <p class="mt-1.5 text-sm text-ivory-600 line-clamp-2">{program.data.summary}</p>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+</BaseLayout>

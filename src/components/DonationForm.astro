@@ -1,0 +1,119 @@
+---
+// Donations are processed through the Temple Hub's donate API (Tweeble),
+// which creates a Stripe-hosted Checkout session on the temple's behalf —
+// the temple's Stripe account, not a separate provider bolted onto this
+// site. That API only supports one-time gifts, so there's no monthly
+// toggle here; recurring giving lives in the membership packages instead.
+interface Props {
+  fund?: string;
+}
+const { fund = 'General Fund' } = Astro.props;
+const amounts = [21, 51, 108, 251, 501];
+---
+
+<div class="card p-6 sm:p-8" data-donation-form data-fund={fund}>
+  <p class="text-sm text-ivory-500">Donating to</p>
+  <p class="font-display text-lg font-semibold text-maroon-700">{fund}</p>
+
+  <div class="mt-5 grid grid-cols-3 gap-2 sm:grid-cols-5">
+    {amounts.map((amt) => (
+      <button type="button" class="amount-btn rounded-lg border border-ivory-300 py-2.5 text-sm font-semibold text-maroon-700 hover:border-marigold-400" data-amount={amt}>
+        ${amt}
+      </button>
+    ))}
+  </div>
+
+  <div class="mt-4">
+    <label for={`custom-amount-${fund}`} class="block text-sm font-medium text-ivory-800">Or enter your own amount</label>
+    <div class="relative mt-1.5">
+      <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ivory-500">$</span>
+      <input id={`custom-amount-${fund}`} type="number" min="1" step="1" placeholder="0.00" class="custom-amount-input w-full rounded-lg border border-ivory-300 bg-white py-2.5 pl-7 pr-3.5 text-sm focus:border-maroon-400" />
+    </div>
+  </div>
+
+  <label class="mt-4 flex items-center gap-2.5 text-sm text-ivory-700">
+    <input type="checkbox" class="anonymous-checkbox h-4 w-4 rounded border-ivory-300 text-maroon-600 focus-visible:outline-3" />
+    Give anonymously
+  </label>
+
+  <button type="button" disabled class="donate-submit btn-primary mt-6 w-full disabled:cursor-not-allowed disabled:opacity-50">
+    Donate Securely
+  </button>
+  <p class="donate-status mt-3 text-center text-sm" role="status" aria-live="polite"></p>
+  <p class="mt-3 text-center text-xs text-ivory-500">Payments are processed securely by Stripe, via the temple's Temple Hub.</p>
+</div>
+
+<script>
+  import { TWEEBLE } from '../lib/site';
+
+  document.querySelectorAll<HTMLElement>('[data-donation-form]').forEach((card) => {
+    let selectedAmount: number | null = null;
+
+    const amountBtns = card.querySelectorAll<HTMLButtonElement>('.amount-btn');
+    const customInput = card.querySelector<HTMLInputElement>('.custom-amount-input');
+    const anonymousCheckbox = card.querySelector<HTMLInputElement>('.anonymous-checkbox');
+    const submitBtn = card.querySelector<HTMLButtonElement>('.donate-submit');
+    const status = card.querySelector<HTMLElement>('.donate-status');
+
+    function selectAmount(amount: number, btn?: HTMLButtonElement) {
+      selectedAmount = amount;
+      amountBtns.forEach((b) => b.classList.remove('border-marigold-400', 'bg-marigold-50'));
+      btn?.classList.add('border-marigold-400', 'bg-marigold-50');
+      if (submitBtn) submitBtn.disabled = false;
+    }
+
+    amountBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (customInput) customInput.value = '';
+        selectAmount(Number(btn.dataset.amount), btn);
+      });
+    });
+
+    customInput?.addEventListener('input', () => {
+      amountBtns.forEach((b) => b.classList.remove('border-marigold-400', 'bg-marigold-50'));
+      const val = Number(customInput.value);
+      selectedAmount = val > 0 ? val : null;
+      if (submitBtn) submitBtn.disabled = !selectedAmount;
+    });
+
+    submitBtn?.addEventListener('click', async () => {
+      if (!selectedAmount || !status) return;
+      submitBtn.disabled = true;
+      status.textContent = 'Redirecting to secure checkout…';
+      status.className = 'donate-status mt-3 text-center text-sm text-ivory-600';
+
+      const affiliateRef = new URLSearchParams(window.location.search).get('ref') ?? undefined;
+
+      try {
+        const res = await fetch(TWEEBLE.api.donate, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amountCents: Math.round(selectedAmount * 100),
+            isAnonymous: anonymousCheckbox?.checked ?? false,
+            ...(affiliateRef ? { affiliateRef } : {}),
+            successUrl: `${window.location.origin}/donation-confirmation/`,
+            cancelUrl: `${window.location.origin}/donation-failed/`,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.url) throw new Error(data.error ?? 'Could not start checkout.');
+        window.location.href = data.url;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Something went wrong.';
+        status.innerHTML = '';
+        status.appendChild(document.createTextNode(message));
+        status.appendChild(document.createElement('br'));
+        const link = document.createElement('a');
+        link.href = TWEEBLE.donateUrl;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.className = 'font-semibold text-maroon-700 underline decoration-marigold-300 decoration-2 underline-offset-2';
+        link.textContent = 'Donate on the Temple Hub instead';
+        status.appendChild(link);
+        status.className = 'donate-status mt-3 text-center text-sm text-maroon-600';
+        submitBtn.disabled = false;
+      }
+    });
+  });
+</script>

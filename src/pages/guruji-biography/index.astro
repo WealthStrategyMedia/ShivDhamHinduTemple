@@ -1,0 +1,61 @@
+---
+import { getEntry, render } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import guruYoung from '../../assets/photos/guruji-young-ascetic.jpg';
+import guruPortrait from '../../assets/photos/guruji-portrait.jpg';
+
+const page = await getEntry('pages', 'guruji-biography');
+const { Content } = page ? await render(page) : { Content: null };
+---
+
+<BaseLayout title="Guruji's Biography" description={page?.data.summary}>
+  <PageHero
+    eyebrow="About"
+    title="Guruji's Biography"
+    description={page?.data.summary}
+    compact
+  />
+
+  <div class="container-page py-16 sm:py-20">
+    <div class="grid gap-12 lg:grid-cols-[3fr_2fr] lg:items-start">
+      <article class="prose-temple">
+        {Content && <Content />}
+      </article>
+
+      <aside class="space-y-6 lg:sticky lg:top-24">
+        <div class="overflow-hidden rounded-2xl border border-marigold-200 bg-white shadow-lift">
+          <div class="bg-gradient-to-br from-maroon-700 to-maroon-900 p-5">
+            <Image
+              src={guruPortrait}
+              alt="Gurudev Brahmrishi Swami Vishvatma Bawra Ji Maharaj, a cherished memorial portrait titled Madhur Smriti"
+              width={600}
+              height={822}
+              class="mx-auto w-full max-w-[320px] rounded-lg border-4 border-marigold-300 shadow-lg"
+            />
+          </div>
+          <p class="px-5 py-4 text-center text-sm text-ivory-600">
+            <span class="devanagari block text-base text-maroon-700">मधुर स्मृति</span>
+            A cherished portrait of Gurudev, kept in loving remembrance.
+          </p>
+        </div>
+
+        <div class="overflow-hidden rounded-2xl border border-ivory-200 bg-white shadow-lift">
+          <div class="bg-gradient-to-br from-ivory-700 to-ivory-900 p-5">
+            <Image
+              src={guruYoung}
+              alt="A young Gurudev seated in meditation during his early years of tapasya"
+              width={560}
+              height={857}
+              class="mx-auto w-full max-w-[300px] rounded-lg border-4 border-ivory-100 shadow-lg"
+            />
+          </div>
+          <p class="px-5 py-4 text-center text-sm text-ivory-600">
+            Gurudev in his early years of tapasya, before he returned to society to teach.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</BaseLayout>

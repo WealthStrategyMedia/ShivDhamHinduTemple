@@ -1,0 +1,18 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { SITE } from '../../lib/site';
+---
+
+<BaseLayout title="Order Not Completed" description="Your order was not completed." noindex={true}>
+  <div class="container-page flex min-h-[50vh] flex-col items-center justify-center py-20 text-center">
+    <div class="flex h-16 w-16 items-center justify-center rounded-full bg-marigold-100 text-3xl text-maroon-600">!</div>
+    <h1 class="mt-6 text-4xl">Order Not Completed</h1>
+    <p class="mt-4 max-w-md text-lg text-ivory-600">
+      It looks like checkout was cancelled or didn't go through. You have not been charged. You're welcome to try again, or contact the temple office for help.
+    </p>
+    <div class="mt-8 flex gap-3">
+      <a href="/" class="btn-primary">Return Home</a>
+      <a href={`mailto:${SITE.email}`} class="btn-ghost">Contact Us</a>
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,44 @@
+---
+import { getCollection, render, getEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+
+export async function getStaticPaths() {
+  const events = await getCollection('events');
+  return events.map((event) => ({ params: { slug: event.id }, props: { event } }));
+}
+
+const { event } = Astro.props;
+const { Content } = await render(event);
+const location = await getEntry('locations', event.data.location).catch(() => undefined);
+const registrationUrl = event.data.tweebleUrl ?? event.data.registrationUrl;
+---
+
+<BaseLayout title={event.data.title} description={event.data.summary}>
+  <PageHero eyebrow={event.data.category} title={event.data.title} image={event.data.image} imageAlt={event.data.title}>
+    <div class="mt-5 flex flex-wrap gap-3 text-sm">
+      {event.data.start && (
+        <span class="rounded-full bg-white/15 px-4 py-2 font-medium text-white backdrop-blur-sm">
+          {event.data.start.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}
+        </span>
+      )}
+      {event.data.recurrence && (
+        <span class="rounded-full bg-white/15 px-4 py-2 font-medium text-white backdrop-blur-sm">{event.data.recurrence.rule}</span>
+      )}
+      {location && <span class="rounded-full bg-white/15 px-4 py-2 font-medium text-white backdrop-blur-sm">{location.data.name}</span>}
+    </div>
+  </PageHero>
+  <article class="container-prose py-16 sm:py-20">
+    <div class="prose-temple">
+      <Content />
+    </div>
+    {registrationUrl && (
+      <a href={registrationUrl} target="_blank" rel="noopener" class="btn-primary mt-6">
+        {event.data.tweebleUrl ? 'Register on Tweeble' : 'Register'}
+      </a>
+    )}
+    <div class="mt-10">
+      <a href="/events/" class="text-sm font-semibold text-maroon-700 hover:underline">← Back to Events Calendar</a>
+    </div>
+  </article>
+</BaseLayout>

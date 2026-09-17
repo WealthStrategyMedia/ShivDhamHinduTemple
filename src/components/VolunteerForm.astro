@@ -1,0 +1,151 @@
+---
+// Volunteer sign-up, posted directly to the Temple Hub's volunteer API
+// (Tweeble) — this is now the temple's only volunteer sign-up path.
+// Field set matches that API's schema exactly (fullName, email, phone,
+// city, state, country, areasOfInterest, availability, skillsExperience,
+// message); it doesn't create or require a Tweeble account for the
+// volunteer.
+const AREAS_OF_INTEREST = [
+  'Fundraising',
+  'Event Support',
+  'Administrative / Office Help',
+  'Marketing & Social Media',
+  'Mentoring & Tutoring',
+  'Manual Labor / Logistics',
+  'Community Outreach',
+  'Other',
+] as const;
+---
+
+<form id="volunteer-form" class="card space-y-5 p-6 sm:p-8">
+  <div class="grid gap-5 sm:grid-cols-2">
+    <div>
+      <label for="v-fullName" class="block text-sm font-medium text-ivory-800">Full Name</label>
+      <input id="v-fullName" name="fullName" type="text" required autocomplete="name"
+        class="mt-1.5 w-full rounded-lg border border-ivory-300 bg-white px-3.5 py-2.5 text-sm focus:border-maroon-400" />
+    </div>
+    <div>
+      <label for="v-email" class="block text-sm font-medium text-ivory-800">Email</label>
+      <input id="v-email" name="email" type="email" required autocomplete="email"
+        class="mt-1.5 w-full rounded-lg border border-ivory-300 bg-white px-3.5 py-2.5 text-sm focus:border-maroon-400" />
+    </div>
+  </div>
+
+  <div class="grid gap-5 sm:grid-cols-2">
+    <div>
+      <label for="v-phone" class="block text-sm font-medium text-ivory-800">Phone <span class="text-ivory-400">(optional)</span></label>
+      <input id="v-phone" name="phone" type="tel" autocomplete="tel"
+        class="mt-1.5 w-full rounded-lg border border-ivory-300 bg-white px-3.5 py-2.5 text-sm focus:border-maroon-400" />
+    </div>
+    <div>
+      <label for="v-availability" class="block text-sm font-medium text-ivory-800">Availability <span class="text-ivory-400">(optional)</span></label>
+      <input id="v-availability" name="availability" type="text" placeholder="e.g. weekends, a few hours a month"
+        class="mt-1.5 w-full rounded-lg border border-ivory-300 bg-white px-3.5 py-2.5 text-sm focus:border-maroon-400" />
+    </div>
+  </div>
+
+  <div class="grid gap-5 sm:grid-cols-3">
+    <div>
+      <label for="v-city" class="block text-sm font-medium text-ivory-800">City <span class="text-ivory-400">(optional)</span></label>
+      <input id="v-city" name="city" type="text" autocomplete="address-level2"
+        class="mt-1.5 w-full rounded-lg border border-ivory-300 bg-white px-3.5 py-2.5 text-sm focus:border-maroon-400" />
+    </div>
+    <div>
+      <label for="v-state" class="block text-sm font-medium text-ivory-800">State <span class="text-ivory-400">(optional)</span></label>
+      <input id="v-state" name="state" type="text" autocomplete="address-level1"
+        class="mt-1.5 w-full rounded-lg border border-ivory-300 bg-white px-3.5 py-2.5 text-sm focus:border-maroon-400" />
+    </div>
+    <div>
+      <label for="v-country" class="block text-sm font-medium text-ivory-800">Country <span class="text-ivory-400">(optional)</span></label>
+      <input id="v-country" name="country" type="text" autocomplete="country-name" placeholder="USA"
+        class="mt-1.5 w-full rounded-lg border border-ivory-300 bg-white px-3.5 py-2.5 text-sm focus:border-maroon-400" />
+    </div>
+  </div>
+
+  <fieldset>
+    <legend class="block text-sm font-medium text-ivory-800">Areas of Interest <span class="text-ivory-400">(optional)</span></legend>
+    <div class="mt-2 grid gap-2 sm:grid-cols-2">
+      {AREAS_OF_INTEREST.map((area) => (
+        <label class="flex items-center gap-2.5 rounded-lg border border-ivory-200 px-3.5 py-2.5 text-sm text-ivory-700 hover:border-marigold-300">
+          <input type="checkbox" name="areasOfInterest" value={area} class="h-4 w-4 rounded border-ivory-300 text-maroon-600 focus-visible:outline-3" />
+          {area}
+        </label>
+      ))}
+    </div>
+  </fieldset>
+
+  <div>
+    <label for="v-skillsExperience" class="block text-sm font-medium text-ivory-800">Relevant Skills or Experience <span class="text-ivory-400">(optional)</span></label>
+    <textarea id="v-skillsExperience" name="skillsExperience" rows="3"
+      class="mt-1.5 w-full rounded-lg border border-ivory-300 bg-white px-3.5 py-2.5 text-sm focus:border-maroon-400"></textarea>
+  </div>
+
+  <div>
+    <label for="v-message" class="block text-sm font-medium text-ivory-800">Anything Else You'd Like Us to Know? <span class="text-ivory-400">(optional)</span></label>
+    <textarea id="v-message" name="message" rows="4"
+      class="mt-1.5 w-full rounded-lg border border-ivory-300 bg-white px-3.5 py-2.5 text-sm focus:border-maroon-400"></textarea>
+  </div>
+
+  <!-- Honeypot field — hidden from real visitors, catches simple bots -->
+  <div class="hidden" aria-hidden="true">
+    <label for="v-company">Company</label>
+    <input id="v-company" name="company" type="text" tabindex="-1" autocomplete="off" />
+  </div>
+
+  <button type="submit" class="btn-primary w-full sm:w-auto">Send Volunteer Sign-Up</button>
+  <p id="volunteer-status" class="text-sm" role="status" aria-live="polite"></p>
+</form>
+
+<script>
+  import { TWEEBLE } from '../lib/site';
+
+  const form = document.getElementById('volunteer-form') as HTMLFormElement | null;
+  const status = document.getElementById('volunteer-status');
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!status) return;
+
+    const formData = new FormData(form);
+    if (formData.get('company')) return; // honeypot tripped, silently drop
+
+    const areasOfInterest = formData.getAll('areasOfInterest');
+    const payload: Record<string, unknown> = {
+      fullName: formData.get('fullName'),
+      email: formData.get('email'),
+      phone: formData.get('phone') || undefined,
+      city: formData.get('city') || undefined,
+      state: formData.get('state') || undefined,
+      country: formData.get('country') || undefined,
+      availability: formData.get('availability') || undefined,
+      skillsExperience: formData.get('skillsExperience') || undefined,
+      message: formData.get('message') || undefined,
+      ...(areasOfInterest.length > 0 ? { areasOfInterest } : {}),
+    };
+
+    const submitButton = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+    if (submitButton) submitButton.disabled = true;
+    status.textContent = 'Sending…';
+    status.className = 'text-sm text-ivory-600';
+
+    try {
+      const res = await fetch(TWEEBLE.api.volunteer, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error ?? 'Request failed');
+      status.textContent = "Thank you for signing up! We'll be in touch soon.";
+      status.className = 'text-sm text-tulsi-700';
+      form.reset();
+    } catch (err) {
+      status.textContent = err instanceof Error && err.message !== 'Request failed'
+        ? err.message
+        : 'Something went wrong. Please try again or contact the temple office directly.';
+      status.className = 'text-sm text-maroon-600';
+    } finally {
+      if (submitButton) submitButton.disabled = false;
+    }
+  });
+</script>

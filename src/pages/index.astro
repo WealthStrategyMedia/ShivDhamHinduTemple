@@ -1,0 +1,378 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import { SITE, TWEEBLE } from '../lib/site';
+import Mandala from '../components/Mandala.astro';
+import QuickLinks from '../components/QuickLinks.astro';
+import YouTubeEmbed from '../components/YouTubeEmbed.astro';
+import heroImage from '../assets/photos/altar-shiva-radhakrishna-ganesh.jpg';
+import communityImage from '../assets/photos/community-group.jpg';
+
+const deities = (await getCollection('deities')).sort((a, b) => a.data.order - b.data.order);
+const programs = (await getCollection('programs')).sort((a, b) => a.data.order - b.data.order).slice(0, 4);
+const storeItems = (await getCollection('store')).sort((a, b) => a.data.order - b.data.order).slice(0, 4);
+---
+
+<BaseLayout title={SITE.name} description={SITE.tagline}>
+  <!-- Hero -->
+  <section class="hero-photo flex min-h-[34rem] items-end sm:min-h-[40rem]">
+    <Image src={heroImage} alt="The temple altar, decorated for worship" width={1920} height={1100} class="object-center" />
+    <div class="hero-content container-page w-full py-16 sm:py-24">
+      <p class="eyebrow text-marigold-300">Orlando, Florida</p>
+      <h1 class="mt-4 max-w-2xl text-white">{SITE.name}</h1>
+      <p class="mt-6 max-w-xl text-lg leading-relaxed text-ivory-100">
+        {SITE.tagline}. A home for worship, festivals, learning, and community, open to all who seek it.
+      </p>
+      <div class="mt-9 flex flex-wrap gap-3">
+        <a href="/puja-bookings/" class="btn-primary">View Temple Services</a>
+        <a href="/online-donations/" class="btn-ghost border-ivory-100/40 text-ivory-50 hover:bg-white/10">Donate</a>
+        <a href="/directions-to-our-temple/" class="btn-ghost border-ivory-100/40 text-ivory-50 hover:bg-white/10">Plan a Visit</a>
+      </div>
+    </div>
+  </section>
+
+  <QuickLinks />
+
+  <!-- Quick facts strip -->
+  <section class="border-b border-ivory-200 bg-white">
+    <div class="container-page flex flex-wrap items-start justify-center gap-x-10 gap-y-6 py-10 text-center sm:gap-x-14">
+      {[
+        ['Founded', '2001'],
+        ['Deities Enshrined', '7'],
+        ['Weekly Programs', '8+'],
+        ['Open', '7 Days'],
+        ['Welcome', 'Everyone'],
+      ].map(([label, value]) => (
+        <div class="w-24 sm:w-28">
+          <p class="font-display text-2xl font-semibold text-maroon-700 sm:text-3xl">{value}</p>
+          <p class="mt-1 text-xs font-medium uppercase tracking-wider text-ivory-500">{label}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- Deities -->
+  <section class="container-page py-20 sm:py-24">
+    <div class="mx-auto max-w-2xl text-center">
+      <p class="eyebrow">Worship</p>
+      <h2 class="mt-2">The Deities of Shiv Dham</h2>
+      <p class="mt-4 text-ivory-600">Seven murtis, each honored with daily aarti and dedicated festival celebrations throughout the year.</p>
+    </div>
+    <div class="mt-12 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-3">
+      {deities.map((deity) => (
+        <a href={`/deities/${deity.id}/`} class="card-photo group flex flex-col items-center text-center">
+          {deity.data.image ? (
+            <Image src={deity.data.image} alt="" width={480} height={480} class="h-52 w-full sm:h-56" />
+          ) : (
+            <div class="flex h-52 w-full items-center justify-center bg-gradient-to-br from-maroon-600 to-maroon-800 sm:h-56">
+              <span class="font-display text-4xl text-marigold-200">ॐ</span>
+            </div>
+          )}
+          <p class="px-2 py-4 font-display text-base font-semibold text-maroon-700 group-hover:text-marigold-600 sm:text-lg">{deity.data.title}</p>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <div class="section-break">
+    <Mandala class="h-10 w-10 text-marigold-400" opacity={0.6} />
+  </div>
+
+  <!-- Upcoming events (live from the Temple Hub) -->
+  <section class="bg-ivory-100 py-20 sm:py-24">
+    <div class="container-page">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p class="eyebrow">Calendar</p>
+          <h2 class="mt-2">Upcoming Celebrations</h2>
+        </div>
+        <a href="/events/" class="btn-ghost">View All Events</a>
+      </div>
+      <div id="home-events-loading" class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {[0, 1, 2].map(() => (
+          <div class="card-photo animate-pulse">
+            <div class="h-52 bg-ivory-200"></div>
+            <div class="space-y-2 p-6">
+              <div class="h-3 w-1/3 rounded bg-ivory-200"></div>
+              <div class="h-5 w-4/5 rounded bg-ivory-200"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div id="home-events-empty" class="hidden rounded-2xl bg-white p-8 text-center">
+        <p class="text-ivory-700">No events are scheduled at the moment — check the <a href="/events/" class="font-semibold text-maroon-700 underline decoration-marigold-300 decoration-2 underline-offset-2">full events page</a> soon.</p>
+      </div>
+      <div id="home-events-grid" class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"></div>
+    </div>
+  </section>
+
+  <!-- Temple Hub -->
+  <section class="container-page py-20 sm:py-24">
+    <div class="grid gap-10 lg:grid-cols-2 lg:items-center">
+      <div>
+        <p class="eyebrow">One Link, Everything Temple</p>
+        <h2 class="mt-2">The Temple Hub</h2>
+        <p class="mt-4 text-ivory-600">
+          Events, services and products, membership, and the temple's latest news all live in one place on the Temple Hub. And every temple-goer can earn real money just by sharing it.
+        </p>
+        <ul class="mt-6 space-y-3 text-sm text-ivory-700">
+          <li class="flex items-start gap-2.5">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-marigold-400"></span>
+            Register for events and book temple services and products
+          </li>
+          <li class="flex items-start gap-2.5">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-marigold-400"></span>
+            Sign up for temple membership and read the latest news
+          </li>
+          <li class="flex items-start gap-2.5">
+            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-marigold-400"></span>
+            Share events, services, or a membership invite and earn real money — keep it, or donate it back
+          </li>
+        </ul>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href={TWEEBLE.hubUrl} target="_blank" rel="noopener" class="btn-primary">Open the Temple Hub</a>
+          <a href="/temple-hub/" class="btn-ghost">Learn More</a>
+        </div>
+      </div>
+      <div class="mx-auto w-full max-w-xs">
+        <YouTubeEmbed id="UuBWgNTjyGg" title="Join Shri Shiv Dham Hindu Temple Orlando" orientation="portrait" />
+        <p class="mt-4 text-center text-sm text-ivory-600">From festival recaps to the temple's mention on the red carpet at the Emmys — stay current, and earn while you share it.</p>
+        <a href={TWEEBLE.hubUrl} target="_blank" rel="noopener" class="btn-primary mt-4 w-full">Open the Temple Hub</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Community photo break -->
+  <section class="relative h-64 overflow-hidden sm:h-80">
+    <Image src={communityImage} alt="The Shiv Dham community gathered together at the temple" width={1920} height={640} class="h-full w-full object-cover" />
+    <div class="absolute inset-0 bg-maroon-800/45"></div>
+    <div class="absolute inset-0 flex items-center justify-center px-6 text-center">
+      <p class="max-w-xl font-display text-2xl font-semibold text-white sm:text-3xl">
+        "A place of religious worship for all, without discrimination of caste, creed, or nationality."
+      </p>
+    </div>
+  </section>
+
+  <!-- Volunteer recruitment -->
+  <section class="hero-pattern relative">
+    <Mandala class="mandala-decor" opacity={0.18} />
+    <div class="container-page relative z-10 grid gap-10 py-20 sm:py-24 lg:grid-cols-2 lg:items-center">
+      <div>
+        <p class="eyebrow text-marigold-300">Get Involved</p>
+        <h2 class="mt-2 text-white">Give Your Time, Grow the Community</h2>
+        <p class="mt-4 max-w-lg text-ivory-100">
+          From festival setup to office help to mentoring the next generation, the temple runs on the generosity of volunteers. Whether you have a few hours a month or a regular weekly slot, there's a place for you here.
+        </p>
+        <a href="/volunteering/" class="btn-primary mt-8">Become a Volunteer</a>
+      </div>
+      <ul class="space-y-3 text-sm text-ivory-100">
+        <li class="flex items-start gap-2.5 rounded-xl bg-white/10 px-5 py-4">
+          <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-marigold-300"></span>
+          Event support for festivals like Shravan Mela, Diwali, and Holi
+        </li>
+        <li class="flex items-start gap-2.5 rounded-xl bg-white/10 px-5 py-4">
+          <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-marigold-300"></span>
+          Administrative help, fundraising, marketing, and community outreach
+        </li>
+        <li class="flex items-start gap-2.5 rounded-xl bg-white/10 px-5 py-4">
+          <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-marigold-300"></span>
+          Mentoring and tutoring the temple's youth programs
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Programs -->
+  <section class="container-page py-20 sm:py-24">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="eyebrow">Learn</p>
+        <h2 class="mt-2">Programs &amp; Classes</h2>
+      </div>
+      <a href="/programs/" class="btn-ghost">All Programs</a>
+    </div>
+    <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {programs.map((program) => (
+        <a href={`/${program.id}/`} class="card p-6">
+          <h3 class="font-display text-lg font-semibold text-maroon-700">{program.data.title}</h3>
+          <p class="mt-2 text-sm text-ivory-600">{program.data.summary}</p>
+          {program.data.schedule && <p class="mt-3 text-xs font-medium uppercase tracking-wide text-marigold-600">{program.data.schedule}</p>}
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- Temple Store -->
+  <section class="bg-white py-20 sm:py-24">
+    <div class="container-page">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p class="eyebrow">Shop</p>
+          <h2 class="mt-2">Temple Store</h2>
+          <p class="mt-4 max-w-xl text-ivory-600">Order festival thalis for pickup, reserve a Shravan Mela vendor booth, and pick up Holi color — every purchase supports the temple's kitchen, festivals, and community programs.</p>
+        </div>
+        <a href="/temple-store/" class="btn-ghost">Visit the Store</a>
+      </div>
+      <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {storeItems.map((item) => (
+          <a href="/temple-store/" class="card-photo group">
+            {item.data.image ? (
+              <Image src={item.data.image} alt={item.data.title} width={480} height={320} class="h-52" />
+            ) : (
+              <div class="flex h-52 items-center justify-center bg-gradient-to-br from-maroon-600 to-maroon-800">
+                <span class="font-display text-3xl text-marigold-200">ॐ</span>
+              </div>
+            )}
+            <div class="p-6">
+              <h3 class="font-display text-base font-semibold text-maroon-700 group-hover:text-marigold-600">{item.data.title}</h3>
+              <p class="mt-2 font-display text-lg font-semibold text-maroon-700">${item.data.price.toFixed(2)}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Reviews — stays hidden until at least one review exists on Tweeble -->
+  <section id="reviews-section" class="hidden bg-ivory-100 py-20 sm:py-24">
+    <div class="container-page">
+      <div class="mx-auto max-w-2xl text-center">
+        <p class="eyebrow">Testimonials</p>
+        <h2 class="mt-2">What Visitors Are Saying</h2>
+      </div>
+      <div id="reviews-grid" class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"></div>
+    </div>
+  </section>
+
+  <!-- Donate CTA -->
+  <section class="hero-pattern relative">
+    <Mandala class="mandala-decor" opacity={0.18} />
+    <div class="container-page relative z-10 flex flex-col items-center gap-6 py-20 text-center sm:py-24">
+      <h2 class="max-w-xl text-white">
+        Your generosity sustains this temple's worship and service
+      </h2>
+      <p class="max-w-lg text-ivory-100">
+        Every gift, of any size, supports daily puja, priest care, festival celebrations, and community programs for Central Florida's Hindu community.
+      </p>
+      <a href="/online-donations/" class="btn-primary">Make a Donation</a>
+    </div>
+  </section>
+</BaseLayout>
+
+<template id="home-event-card-template">
+  <a class="card-photo group" target="_blank" rel="noopener">
+    <div class="relative h-52 overflow-hidden bg-gradient-to-br from-maroon-600 to-maroon-800">
+      <img class="event-cover hidden h-52 w-full object-cover" loading="lazy" alt="" />
+      <span class="event-fallback flex h-52 items-center justify-center font-display text-3xl text-marigold-200">ॐ</span>
+    </div>
+    <div class="p-6">
+      <p class="event-date eyebrow"></p>
+      <h3 class="event-title mt-2 font-display text-xl font-semibold text-maroon-700 group-hover:text-marigold-600"></h3>
+      <p class="event-desc mt-2 text-sm text-ivory-600 line-clamp-2"></p>
+    </div>
+  </a>
+</template>
+
+<script>
+  import { fetchTweebleEvents, formatEventDate, truncate, isEventPast } from '../lib/tweeble-client';
+
+  (async () => {
+    const loadingEl = document.getElementById('home-events-loading');
+    const emptyEl = document.getElementById('home-events-empty');
+    const gridEl = document.getElementById('home-events-grid');
+    const template = document.getElementById('home-event-card-template') as HTMLTemplateElement | null;
+
+    try {
+      const events = await fetchTweebleEvents();
+      if (!gridEl || !template) return;
+
+      const now = Date.now();
+      const upcoming = events
+        .filter((e) => !isEventPast(e, now))
+        .sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime())
+        .slice(0, 3);
+
+      if (upcoming.length === 0) {
+        emptyEl?.classList.remove('hidden');
+        return;
+      }
+
+      for (const event of upcoming) {
+        const node = template.content.cloneNode(true) as DocumentFragment;
+        const link = node.querySelector('a')!;
+        link.href = event.url;
+
+        const img = node.querySelector<HTMLImageElement>('.event-cover')!;
+        const fallback = node.querySelector<HTMLElement>('.event-fallback')!;
+        if (event.coverImageUrl) {
+          img.src = event.coverImageUrl;
+          img.alt = event.title;
+          img.classList.remove('hidden');
+          fallback.classList.add('hidden');
+        }
+
+        node.querySelector('.event-date')!.textContent = formatEventDate(event.eventDate);
+        node.querySelector('.event-title')!.textContent = event.title;
+        node.querySelector('.event-desc')!.textContent = truncate(event.description, 120);
+
+        gridEl.appendChild(node);
+      }
+    } catch (err) {
+      emptyEl?.classList.remove('hidden');
+      console.error('Failed to load Tweeble events', err);
+    } finally {
+      loadingEl?.remove();
+    }
+  })();
+</script>
+
+<template id="review-card-template">
+  <a class="card flex flex-col p-6" target="_blank" rel="noopener">
+    <div class="review-stars flex gap-0.5 text-marigold-400"></div>
+    <p class="review-text mt-3 flex-1 text-sm leading-relaxed text-ivory-700 line-clamp-4"></p>
+    <p class="review-author mt-4 font-display text-sm font-semibold text-maroon-700"></p>
+  </a>
+</template>
+
+<script>
+  import { fetchTweebleReviews, pick, truncate, type TweebleReview } from '../lib/tweeble-client';
+
+  function starSvg(filled: boolean): string {
+    return `<svg viewBox="0 0 20 20" width="16" height="16" fill="${filled ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M10 1.5l2.6 5.6 6.1.6-4.6 4.2 1.3 6-5.4-3.1-5.4 3.1 1.3-6-4.6-4.2 6.1-.6Z"/></svg>`;
+  }
+
+  (async () => {
+    const section = document.getElementById('reviews-section');
+    const gridEl = document.getElementById('reviews-grid');
+    const template = document.getElementById('review-card-template') as HTMLTemplateElement | null;
+    if (!section || !gridEl || !template) return;
+
+    try {
+      const reviews = await fetchTweebleReviews();
+      if (!Array.isArray(reviews) || reviews.length === 0) return;
+
+      for (const review of reviews as TweebleReview[]) {
+        const node = template.content.cloneNode(true) as DocumentFragment;
+        const link = node.querySelector('a')!;
+        link.href = pick<string>(review, ['url', 'link']) ?? 'https://www.tweeble.com';
+
+        const rating = Math.max(0, Math.min(5, Math.round(pick<number>(review, ['rating', 'stars', 'score']) ?? 5)));
+        const starsEl = node.querySelector('.review-stars')!;
+        starsEl.innerHTML = Array.from({ length: 5 }, (_, i) => starSvg(i < rating)).join('');
+
+        const text = pick<string>(review, ['text', 'body', 'content', 'quote']) ?? '';
+        node.querySelector('.review-text')!.textContent = truncate(text, 220);
+
+        const author = pick<string>(review, ['authorName', 'name', 'reviewerName']) ?? 'Temple Visitor';
+        node.querySelector('.review-author')!.textContent = author;
+
+        gridEl.appendChild(node);
+      }
+
+      section.classList.remove('hidden');
+    } catch (err) {
+      console.error('Failed to load Tweeble reviews', err);
+    }
+  })();
+</script>
