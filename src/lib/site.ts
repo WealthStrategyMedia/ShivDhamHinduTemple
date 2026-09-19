@@ -48,8 +48,16 @@ export const TWEEBLE = {
     fundraising: `https://www.tweeble.com/api/public/${TWEEBLE_TENANT_ID}/fundraising`,
     membership: `https://www.tweeble.com/api/public/${TWEEBLE_TENANT_ID}/membership-packages`,
     reviews: `https://www.tweeble.com/api/public/${TWEEBLE_TENANT_ID}/reviews`,
+    programs: `https://www.tweeble.com/api/public/${TWEEBLE_TENANT_ID}/programs`,
     donate: `https://www.tweeble.com/api/public/${TWEEBLE_TENANT_ID}/donate`,
     volunteer: `https://www.tweeble.com/api/public/${TWEEBLE_TENANT_ID}/volunteer`,
+  },
+  // Each contact form has one URL: GET returns its field schema, POST
+  // submits it (submissions are tracked in the temple's Tweeble account).
+  contactForms: {
+    contactUs: `https://www.tweeble.com/api/public/${TWEEBLE_TENANT_ID}/contact-forms/52749f02-79d3-44f6-ac5a-abb2bd9b89e2`,
+    summerCamp: `https://www.tweeble.com/api/public/${TWEEBLE_TENANT_ID}/contact-forms/88de0ed1-de4f-4bf8-9521-ae06da8724cf`,
+    feedback: `https://www.tweeble.com/api/public/${TWEEBLE_TENANT_ID}/contact-forms/1b71ce44-d53d-461c-8d02-96900ac36c44`,
   },
   donateUrl: `https://www.tweeble.com/directory/${TWEEBLE_TENANT_ID}#donate`,
 } as const;
@@ -92,15 +100,8 @@ export const NAV = [
     label: 'Programs',
     href: '/programs/',
     children: [
+      // Each program in the Tweeble feed is appended here by Header.astro.
       { label: 'All Programs', href: '/programs/' },
-      { label: 'Bal Vihar Classes', href: '/bal-vihar-classes/' },
-      { label: 'Sadvidya Pathshala', href: '/sadvidya-pathshala/' },
-      { label: 'Yoga Classes', href: '/yoga-classes/' },
-      { label: 'Music Classes', href: '/music-classes/' },
-      { label: 'Language Classes', href: '/language-classes/' },
-      { label: 'Dance Classes', href: '/dance-classes/' },
-      { label: 'Geetha Classes', href: '/geetha-classes/' },
-      { label: 'Summer Camp', href: '/summer-camp/' },
     ],
   },
   {

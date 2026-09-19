@@ -72,3 +72,42 @@
   from = "/tweeble/"
   to = "/temple-hub/"
   status = 301
+
+# Programs no longer offered (the Temple Hub's Programs feed is the source
+# of truth). Their old pages send visitors to the current program list.
+[[redirects]]
+  from = "/bal-vihar-classes/"
+  to = "/programs/"
+  status = 301
+
+[[redirects]]
+  from = "/sadvidya-pathshala/"
+  to = "/programs/"
+  status = 301
+
+[[redirects]]
+  from = "/music-classes/"
+  to = "/programs/"
+  status = 301
+
+[[redirects]]
+  from = "/language-classes/"
+  to = "/programs/"
+  status = 301
+
+[[redirects]]
+  from = "/geetha-classes/"
+  to = "/programs/"
+  status = 301
+
+# Temple Projects now come from the Tweeble Fundraising feed, so two project
+# pages moved to the slugs their feed titles produce.
+[[redirects]]
+  from = "/temple-projects/restrooms-and-showers/"
+  to = "/temple-projects/new-restrooms-and-showers/"
+  status = 301
+
+[[redirects]]
+  from = "/temple-projects/admin-office-and-library/"
+  to = "/temple-projects/administrative-office-and-library/"
+  status = 301

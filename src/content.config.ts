@@ -167,28 +167,6 @@ const locations = defineCollection({
   }),
 });
 
-/* Classes and ongoing programs: Bal Vihar, yoga, music, language. */
-const programs = defineCollection({
-  loader: glob({ base: './src/content/programs', pattern: '**/*.{md,mdx}' }),
-  schema: ({ image }) =>
-    z.object({
-      title: z.string(),
-      summary: z.string(),
-      image: image().optional(),
-      schedule: z.string().optional(),
-      ageRange: z.string().optional(),
-      cost: z.string().optional(),
-      // When set, a fixed amount (dollars) the registration fee button
-      // charges via Stripe. `cost` stays the human-readable display text
-      // (which may describe a more complex fee structure than one number).
-      feeAmount: z.number().optional(),
-      stripePriceId: z.string().optional(),
-      registrationUrl: z.string().optional(),
-      order: z.number().default(99),
-      ...seo,
-    }),
-});
-
 /* Prayers, shlokas and aarti texts. */
 const prayers = defineCollection({
   loader: glob({ base: './src/content/prayers', pattern: '**/*.{md,mdx}' }),
@@ -224,21 +202,6 @@ const store = defineCollection({
     }),
 });
 
-/* Temple expansion projects — each a distinct, donatable piece of the
-   temple's current building campaign. */
-const projects = defineCollection({
-  loader: glob({ base: './src/content/projects', pattern: '**/*.{md,mdx}' }),
-  schema: ({ image }) =>
-    z.object({
-      title: z.string(),
-      summary: z.string(),
-      image: image().optional(),
-      fund: z.string(),
-      order: z.number().default(99),
-      ...seo,
-    }),
-});
-
 export const collections = {
   pages,
   deities,
@@ -246,8 +209,6 @@ export const collections = {
   services,
   events,
   locations,
-  programs,
   prayers,
   store,
-  projects,
 };

@@ -1,7 +1,8 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
-import ContactForm from '../../components/ContactForm.astro';
+import TweebleForm from '../../components/TweebleForm.astro';
+import { TWEEBLE } from '../../lib/site';
 ---
 
 <BaseLayout
@@ -17,11 +18,7 @@ import ContactForm from '../../components/ContactForm.astro';
 
   <div class="container-page py-14">
     <div class="mx-auto max-w-2xl">
-      <ContactForm
-        messageLabel="Child's Details"
-        buttonLabel="Send Registration"
-        messageIntro={"I'd like to register my child for Summer Camp.\n\nChild's full name: \nDate of birth: \nCurrent school grade: \nEmergency contact name & number: \nAny special instructions: \n"}
-      />
+      <TweebleForm formUrl={TWEEBLE.contactForms.summerCamp} />
       <p class="mt-4 text-center text-xs text-ivory-500">
         See <a href="/summer-camp/" class="underline">Summer Camp</a> for the full schedule and what's included.
       </p>

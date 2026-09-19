@@ -1,0 +1,174 @@
+---
+// Live grid of the temple's programs, rendered in the browser from the
+// Tweeble Programs feed so cover photos (short-lived signed URLs), prices and
+// next-session dates are always current. Each card links to the program's
+// on-site page when one exists, and always to Tweeble to register.
+import Mandala from './Mandala.astro';
+
+interface Props {
+  /** program id -> on-site page URL */
+  urlMap: Record<string, string>;
+  /** Leave this program out (used for "other programs" on a program's own page). */
+  excludeId?: string;
+  /** id of a wrapping element to hide when there is nothing to show. */
+  wrapperId?: string;
+}
+const { urlMap, excludeId, wrapperId } = Astro.props;
+---
+
+<div
+  id="programs-root"
+  data-url-map={JSON.stringify(urlMap)}
+  data-exclude-id={excludeId ?? ''}
+  data-wrapper-id={wrapperId ?? ''}
+>
+  <div id="programs-loading" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-live="polite">
+    {[0, 1, 2].map(() => (
+      <div class="card-photo animate-pulse">
+        <div class="h-56 bg-ivory-200"></div>
+        <div class="space-y-3 p-6">
+          <div class="h-5 w-2/3 rounded bg-ivory-200"></div>
+          <div class="h-3 w-full rounded bg-ivory-200"></div>
+          <div class="h-3 w-5/6 rounded bg-ivory-200"></div>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <div id="programs-error" class="hidden rounded-2xl border border-marigold-200 bg-marigold-50 p-8 text-center">
+    <p class="text-ivory-700">We couldn't load the programs just now. Please try refreshing shortly, or <a href="/contact-us/" class="font-semibold text-maroon-700 underline">contact the temple office</a>.</p>
+  </div>
+
+  <div id="programs-empty" class="hidden">
+    <div class="hero-pattern relative overflow-hidden rounded-2xl">
+      <Mandala class="mandala-decor" opacity={0.18} />
+      <div class="relative z-10 flex flex-col items-center gap-4 px-6 py-16 text-center sm:py-20">
+        <h2 class="max-w-lg text-white">New Programs Coming Soon</h2>
+        <p class="max-w-lg text-ivory-100">There are no programs open right now. As soon as one is added on the Temple Hub, it will appear here automatically.</p>
+        <a href="/contact-us/" class="btn-primary mt-2">Ask the Temple Office</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="programs-grid" class="flex flex-wrap justify-center gap-6"></div>
+</div>
+
+<template id="program-card-template">
+  <div class="card-photo group flex w-full flex-col sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]">
+    <div class="relative h-56 overflow-hidden bg-gradient-to-br from-maroon-600 to-maroon-800">
+      <img class="program-cover hidden h-56 w-full object-cover" loading="lazy" alt="" />
+      <span class="program-fallback flex h-56 items-center justify-center font-display text-4xl text-marigold-200">ॐ</span>
+      <span class="program-price absolute right-3 top-3 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-maroon-700 shadow-sm"></span>
+    </div>
+    <div class="flex flex-1 flex-col p-6">
+      <div class="flex items-start justify-between gap-3">
+        <h3 class="program-title font-display text-xl font-semibold text-maroon-700"></h3>
+        <button type="button" class="share-trigger flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ivory-400 hover:bg-ivory-100 hover:text-maroon-700" aria-label="Share this program">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 10.6 15.4 6.9M8.6 13.4l6.8 3.7" /></svg>
+        </button>
+      </div>
+      <p class="program-desc mt-2 text-sm leading-relaxed text-ivory-600"></p>
+
+      <dl class="mt-4 space-y-1.5 text-xs text-ivory-600">
+        <div class="program-schedule-row flex items-start gap-2">
+          <dt class="shrink-0 font-semibold text-maroon-600">Schedule</dt>
+          <dd class="program-schedule"></dd>
+        </div>
+        <div class="program-next-row flex items-start gap-2">
+          <dt class="shrink-0 font-semibold text-maroon-600">Next session</dt>
+          <dd class="program-next"></dd>
+        </div>
+        <div class="program-location-row flex items-start gap-2">
+          <dt class="shrink-0 font-semibold text-maroon-600">Location</dt>
+          <dd class="program-location"></dd>
+        </div>
+        <div class="program-age-row flex items-start gap-2">
+          <dt class="shrink-0 font-semibold text-maroon-600">Ages</dt>
+          <dd class="program-age"></dd>
+        </div>
+      </dl>
+
+      <div class="mt-6 flex flex-1 flex-wrap items-end gap-3">
+        <a class="program-signup btn-primary flex-1 whitespace-nowrap" target="_blank" rel="noopener">Register on the Temple Hub</a>
+        <a class="program-details btn-ghost flex-1 whitespace-nowrap hidden">Learn More</a>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  import { fetchTweeblePrograms, formatCents, formatEventDate, truncate, type TweebleProgram } from '../lib/tweeble-client';
+  import { initShareButtons } from '../lib/share-widget';
+  initShareButtons();
+
+  const root = document.getElementById('programs-root')!;
+  const loadingEl = document.getElementById('programs-loading');
+  const errorEl = document.getElementById('programs-error');
+  const emptyEl = document.getElementById('programs-empty');
+  const gridEl = document.getElementById('programs-grid')!;
+  const template = document.getElementById('program-card-template') as HTMLTemplateElement;
+  const urlMap: Record<string, string> = JSON.parse(root.dataset.urlMap ?? '{}');
+  const excludeId = root.dataset.excludeId;
+  const wrapper = root.dataset.wrapperId ? document.getElementById(root.dataset.wrapperId) : null;
+
+  function setOrHide(node: DocumentFragment, rowSel: string, valueSel: string, value: string | null | undefined) {
+    if (value) node.querySelector(valueSel)!.textContent = value;
+    else node.querySelector(rowSel)!.remove();
+  }
+
+  function renderProgram(program: TweebleProgram) {
+    const node = template.content.cloneNode(true) as DocumentFragment;
+
+    const img = node.querySelector<HTMLImageElement>('.program-cover')!;
+    const fallback = node.querySelector<HTMLElement>('.program-fallback')!;
+    if (program.coverPhotoUrl) {
+      img.src = program.coverPhotoUrl;
+      img.alt = program.title;
+      img.classList.remove('hidden');
+      fallback.classList.add('hidden');
+    }
+
+    node.querySelector('.program-title')!.textContent = program.title;
+    node.querySelector('.program-price')!.textContent = program.isFree ? 'Free' : formatCents(program.priceCents);
+    node.querySelector('.program-desc')!.textContent = truncate(program.shortDescription || program.description, 180);
+
+    setOrHide(node, '.program-schedule-row', '.program-schedule', program.scheduleLabel);
+    setOrHide(node, '.program-next-row', '.program-next', program.nextOccurrence ? formatEventDate(program.nextOccurrence) : null);
+    setOrHide(node, '.program-location-row', '.program-location', program.locationLabel);
+    setOrHide(node, '.program-age-row', '.program-age', program.minimumAge ? `${program.minimumAge}+` : null);
+
+    node.querySelector<HTMLAnchorElement>('.program-signup')!.href = program.url;
+
+    const detailUrl = urlMap[program.id];
+    if (detailUrl) {
+      const details = node.querySelector<HTMLAnchorElement>('.program-details')!;
+      details.href = detailUrl;
+      details.classList.remove('hidden');
+    }
+
+    const shareBtn = node.querySelector<HTMLElement>('.share-trigger')!;
+    shareBtn.dataset.shareUrl = detailUrl ? new URL(detailUrl, location.origin).href : program.url;
+    shareBtn.dataset.shareTitle = program.title;
+
+    gridEl.appendChild(node);
+  }
+
+  (async () => {
+    try {
+      const all = await fetchTweeblePrograms();
+      const programs = Array.isArray(all) ? all.filter((p) => p.id !== excludeId) : [];
+      if (programs.length === 0) {
+        if (wrapper) wrapper.classList.add('hidden');
+        else emptyEl?.classList.remove('hidden');
+        return;
+      }
+      programs.forEach(renderProgram);
+    } catch (err) {
+      if (wrapper) wrapper.classList.add('hidden');
+      else errorEl?.classList.remove('hidden');
+      console.error('Failed to load Tweeble programs', err);
+    } finally {
+      loadingEl?.remove();
+    }
+  })();
+</script>

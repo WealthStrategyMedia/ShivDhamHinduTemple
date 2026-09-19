@@ -44,6 +44,43 @@ export interface TweebleBlogPost {
   url: string;
 }
 
+export interface TweebleProgram {
+  id: string;
+  title: string;
+  shortDescription: string;
+  description: string;
+  coverPhotoUrl: string | null;
+  priceCents: number;
+  isFree: boolean;
+  recurrence: string | null;
+  startsAt: string | null;
+  scheduleLabel: string | null;
+  locationLabel: string | null;
+  nextOccurrence: string | null;
+  minimumAge: number | null;
+  url: string;
+}
+
+export interface TweebleFormField {
+  id: string;
+  preset: string;
+  type: string;
+  label: string;
+  placeholder?: string;
+  helpText?: string;
+  required: boolean;
+  options?: string[];
+}
+
+export interface TweebleFormSchema {
+  id: string;
+  name: string;
+  description: string;
+  submitLabel: string;
+  successMessage: string;
+  fields: TweebleFormField[];
+}
+
 // Products and Fundraising Goals have no live entries on Tweeble yet, so
 // their exact field names haven't been confirmed against real data the way
 // events/services/blog were. These types are a best guess by analogy to
@@ -59,7 +96,13 @@ export interface TweebleProduct {
 
 export interface TweebleFundraisingGoal {
   id: string;
-  [key: string]: unknown;
+  title: string;
+  description: string;
+  targetCents: number;
+  photoUrls: string[];
+  url: string;
+  // Not in the feed yet; shown as a progress bar if Tweeble adds it.
+  raisedCents?: number;
 }
 
 export interface TweebleMembershipPackage {
@@ -85,6 +128,8 @@ export const fetchTweebleProducts = () => getJson<TweebleProduct[]>(TWEEBLE.api.
 export const fetchTweebleFundraising = () => getJson<TweebleFundraisingGoal[]>(TWEEBLE.api.fundraising);
 export const fetchTweebleMembership = () => getJson<TweebleMembershipPackage[]>(TWEEBLE.api.membership);
 export const fetchTweebleReviews = () => getJson<TweebleReview[]>(TWEEBLE.api.reviews);
+export const fetchTweeblePrograms = () => getJson<TweebleProgram[]>(TWEEBLE.api.programs);
+export const fetchTweebleFormSchema = (formUrl: string) => getJson<TweebleFormSchema>(formUrl);
 
 /** Returns the first defined, non-null value found under any of `keys` on `obj`. */
 export function pick<T = unknown>(obj: Record<string, unknown>, keys: string[]): T | undefined {
@@ -96,6 +141,11 @@ export function pick<T = unknown>(obj: Record<string, unknown>, keys: string[]):
 
 export function formatCents(cents: number): string {
   return cents === 0 ? 'Free' : `$${(cents / 100).toFixed(2)}`;
+}
+
+/** Whole-dollar amount for goals, e.g. $10,000. */
+export function formatGoalAmount(cents: number): string {
+  return `$${(cents / 100).toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
 }
 
 export function formatEventDate(iso: string): string {

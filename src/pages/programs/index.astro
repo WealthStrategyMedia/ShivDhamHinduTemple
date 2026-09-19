@@ -1,44 +1,31 @@
 ---
-import { getCollection } from 'astro:content';
-import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
+import ProgramGrid from '../../components/ProgramGrid.astro';
+import { getProgramUrlMap } from '../../lib/programs';
 import danceHero from '../../assets/photos/dance-classes.png';
 
-const programs = (await getCollection('programs')).sort((a, b) => a.data.order - b.data.order);
+const urlMap = await getProgramUrlMap();
 ---
 
-<BaseLayout title="Programs & Classes" description="Ongoing classes and programs at Shri Shiv Dham Hindu Temple.">
+<BaseLayout title="Programs & Classes" description="Ongoing classes and programs at Shri Shiv Dham Hindu Temple, live from the Temple Hub.">
   <PageHero
     eyebrow="Learn"
     title="Programs &amp; Classes"
-    description="Ongoing classes in scripture, yoga, music, dance, and language, for children and adults alike."
+    description="Classes and camps for children and adults, live from the Temple Hub. Choose a program to see the details and register."
     image={danceHero}
     imageAlt="Kalagangothri classical dance students at the temple"
     focus="top"
   />
 
   <div class="container-page py-16 sm:py-20">
-    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {programs.map((program) => (
-        <a href={`/${program.id}/`} class="card-photo group">
-          {program.data.image ? (
-            <Image src={program.data.image} alt={program.data.title} width={480} height={280} class="h-56" />
-          ) : (
-            <div class="flex h-56 items-center justify-center bg-gradient-to-br from-maroon-600 to-maroon-800">
-              <span class="font-display text-4xl text-marigold-200">ॐ</span>
-            </div>
-          )}
-          <div class="p-6">
-            <h2 class="font-display text-xl font-semibold text-maroon-700 group-hover:text-marigold-600">{program.data.title}</h2>
-            <p class="mt-2 text-sm leading-relaxed text-ivory-600">{program.data.summary}</p>
-            <dl class="mt-4 space-y-1 text-xs text-ivory-500">
-              {program.data.schedule && <div><dt class="inline font-semibold text-maroon-600">Schedule: </dt><dd class="inline">{program.data.schedule}</dd></div>}
-              {program.data.cost && <div><dt class="inline font-semibold text-maroon-600">Cost: </dt><dd class="inline">{program.data.cost}</dd></div>}
-            </dl>
-          </div>
-        </a>
-      ))}
+    <ProgramGrid urlMap={urlMap} />
+
+    <div class="mt-16 rounded-2xl bg-ivory-100 p-8 text-center">
+      <p class="text-ivory-700">
+        Have a question about a class, or looking for something not listed?
+        <a href="/contact-us/" class="font-semibold text-maroon-700 underline decoration-marigold-300 decoration-2 underline-offset-2">Contact the temple office</a>.
+      </p>
     </div>
   </div>
 </BaseLayout>

@@ -1,9 +1,9 @@
 ---
 import { getEntry, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import ContactForm from '../../components/ContactForm.astro';
+import TweebleForm from '../../components/TweebleForm.astro';
 import PageHero from '../../components/PageHero.astro';
-import { SITE } from '../../lib/site';
+import { SITE, TWEEBLE } from '../../lib/site';
 
 const page = await getEntry('pages', 'contact-us');
 const { Content } = page ? await render(page) : { Content: null };
@@ -22,7 +22,7 @@ const mapSrc = `https://maps.google.com/maps?q=${encodeURIComponent(SITE.address
           <h2 class="text-maroon-700">Send a Message</h2>
           <p class="mt-2 text-sm text-ivory-600">We're happy to answer questions about worship timings, puja bookings, festivals, classes, or volunteering.</p>
           <div class="mt-6">
-            <ContactForm />
+            <TweebleForm formUrl={TWEEBLE.contactForms.contactUs} />
           </div>
         </div>
       </div>

@@ -1,7 +1,8 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
-import ContactForm from '../../components/ContactForm.astro';
+import TweebleForm from '../../components/TweebleForm.astro';
+import { TWEEBLE } from '../../lib/site';
 ---
 
 <BaseLayout
@@ -17,11 +18,7 @@ import ContactForm from '../../components/ContactForm.astro';
 
   <div class="container-page py-14">
     <div class="mx-auto max-w-2xl">
-      <ContactForm
-        messageLabel="Your Feedback"
-        buttonLabel="Send Feedback"
-        messageIntro={"Spiritual atmosphere: \nHow welcomed did you feel: \nOverall experience: \nSuggestions: \n"}
-      />
+      <TweebleForm formUrl={TWEEBLE.contactForms.feedback} />
     </div>
   </div>
 </BaseLayout>

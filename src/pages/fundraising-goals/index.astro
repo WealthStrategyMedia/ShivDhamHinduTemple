@@ -1,176 +1,31 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
-import Mandala from '../../components/Mandala.astro';
+import GoalGrid from '../../components/GoalGrid.astro';
+import { getGoalUrlMap } from '../../lib/fundraising';
 import altarHero from '../../assets/photos/altar-durga-shiva-ganesh-diyas.jpg';
+
+const urlMap = await getGoalUrlMap();
 ---
 
 <BaseLayout title="Fundraising Goals" description="Special fundraising campaigns at Shri Shiv Dham Hindu Temple, live from the Temple Hub.">
   <PageHero
     eyebrow="Give"
     title="Fundraising Goals"
-    description="Special, time-bound campaigns the temple is raising funds for right now, live from the Temple Hub — track progress and contribute directly."
+    description="The campaigns the temple is raising funds for right now, live from the Temple Hub. Learn about each one and contribute directly."
     image={altarHero}
     imageAlt="The temple altar, lit with diyas for worship"
   />
 
   <div class="container-page py-16 sm:py-20">
-    <div id="fundraising-loading" class="grid gap-6 sm:grid-cols-2" aria-live="polite">
-      {[0, 1].map(() => (
-        <div class="card-photo animate-pulse">
-          <div class="h-60 bg-ivory-200"></div>
-          <div class="space-y-3 p-6">
-            <div class="h-5 w-3/4 rounded bg-ivory-200"></div>
-            <div class="h-3 w-full rounded bg-ivory-200"></div>
-            <div class="h-2.5 w-full rounded-full bg-ivory-200"></div>
-          </div>
-        </div>
-      ))}
+    <GoalGrid urlMap={urlMap} />
+
+    <div class="mt-16 rounded-2xl bg-ivory-100 p-8 text-center">
+      <p class="text-ivory-700">
+        Prefer to give where it's needed most? Make a
+        <a href="/online-donations/" class="font-semibold text-maroon-700 underline decoration-marigold-300 decoration-2 underline-offset-2">general donation</a>
+        to support daily puja, priest care, festivals, and community programs.
+      </p>
     </div>
-
-    <div id="fundraising-error" class="hidden rounded-2xl border border-marigold-200 bg-marigold-50 p-8 text-center">
-      <p class="text-ivory-700">We couldn't load fundraising campaigns just now. Please try refreshing shortly.</p>
-    </div>
-
-    <!-- Well-designed empty state — there are no campaigns on Tweeble yet,
-         and this page needs to look intentional, not broken, until there are. -->
-    <div id="fundraising-empty" class="hidden">
-      <div class="hero-pattern relative overflow-hidden rounded-2xl">
-        <Mandala class="mandala-decor" opacity={0.18} />
-        <div class="relative z-10 flex flex-col items-center gap-4 px-6 py-16 text-center sm:py-20">
-          <span class="flex h-14 w-14 items-center justify-center rounded-full bg-white/15 text-marigold-200">
-            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v10M9.5 9.3c0-1.3 1.1-2.1 2.5-2.1s2.5.7 2.5 1.8c0 2.4-5 1.4-5 3.9 0 1.1 1.1 1.8 2.5 1.8s2.5-.8 2.5-2.1" /></svg>
-          </span>
-          <h2 class="max-w-lg text-white">No Active Campaigns Right Now</h2>
-          <p class="max-w-lg text-ivory-100">
-            The temple isn't running a special fundraising campaign at the moment. As soon as one is added on the Temple Hub, it will appear here automatically.
-          </p>
-        </div>
-      </div>
-
-      <div class="mt-10 text-center">
-        <p class="mx-auto max-w-xl text-ivory-600">In the meantime, here are two ways your generosity already makes a difference at the temple:</p>
-        <div class="mt-8 grid gap-6 sm:grid-cols-2">
-          <a href="/temple-projects/" class="card p-7 text-left">
-            <h3 class="font-display text-lg font-semibold text-maroon-700">Temple Projects</h3>
-            <p class="mt-2 text-sm leading-relaxed text-ivory-600">The temple's ongoing building expansion — a larger prayer hall, new restrooms and showers, and an administrative office and library.</p>
-            <span class="mt-4 inline-block text-sm font-semibold text-marigold-600">See the Projects →</span>
-          </a>
-          <a href="/online-donations/" class="card p-7 text-left">
-            <h3 class="font-display text-lg font-semibold text-maroon-700">General Donations</h3>
-            <p class="mt-2 text-sm leading-relaxed text-ivory-600">Support daily puja, priest care, festival celebrations, and community programs with a one-time or monthly gift.</p>
-            <span class="mt-4 inline-block text-sm font-semibold text-marigold-600">Donate Now →</span>
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <div id="fundraising-grid" class="grid gap-6 sm:grid-cols-2"></div>
   </div>
 </BaseLayout>
-
-<template id="fundraising-card-template">
-  <div class="card-photo flex flex-col">
-    <div class="relative h-60 overflow-hidden bg-gradient-to-br from-maroon-600 to-maroon-800">
-      <img class="goal-cover hidden h-60 w-full object-cover" loading="lazy" alt="" />
-      <span class="goal-fallback flex h-60 items-center justify-center font-display text-4xl text-marigold-200">ॐ</span>
-    </div>
-    <div class="flex flex-1 flex-col p-6">
-      <div class="flex items-start justify-between gap-3">
-        <h3 class="goal-title font-display text-lg font-semibold text-maroon-700"></h3>
-        <button type="button" class="share-trigger flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ivory-400 hover:bg-ivory-100 hover:text-maroon-700" aria-label="Share this fundraising goal">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 10.6 15.4 6.9M8.6 13.4l6.8 3.7" /></svg>
-        </button>
-      </div>
-      <p class="goal-desc mt-2 flex-1 text-sm leading-relaxed text-ivory-600 line-clamp-3"></p>
-
-      <div class="goal-progress-wrap mt-4">
-        <div class="flex items-baseline justify-between text-sm">
-          <span class="goal-raised font-display font-semibold text-maroon-700"></span>
-          <span class="goal-percent text-xs font-medium text-ivory-500"></span>
-        </div>
-        <div class="mt-1.5 h-2.5 w-full overflow-hidden rounded-full bg-ivory-200">
-          <div class="goal-bar h-full rounded-full bg-marigold-500" style="width: 0%"></div>
-        </div>
-        <p class="goal-target mt-1 text-xs text-ivory-500"></p>
-      </div>
-
-      <a class="goal-link btn-primary mt-5 w-full" target="_blank" rel="noopener">Contribute on the Temple Hub</a>
-    </div>
-  </div>
-</template>
-
-<script>
-  import { fetchTweebleFundraising, pick, truncate, type TweebleFundraisingGoal } from '../../lib/tweeble-client';
-  import { initShareButtons } from '../../lib/share-widget';
-  initShareButtons();
-
-  const loadingEl = document.getElementById('fundraising-loading');
-  const errorEl = document.getElementById('fundraising-error');
-  const emptyEl = document.getElementById('fundraising-empty');
-  const gridEl = document.getElementById('fundraising-grid');
-  const template = document.getElementById('fundraising-card-template') as HTMLTemplateElement | null;
-
-  function money(cents: number): string {
-    return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-  }
-
-  function renderGoal(goal: TweebleFundraisingGoal) {
-    if (!gridEl || !template) return;
-    const node = template.content.cloneNode(true) as DocumentFragment;
-
-    const title = pick<string>(goal, ['title', 'name', 'campaignName']) ?? 'Fundraising Campaign';
-    const description = pick<string>(goal, ['description', 'story', 'summary']) ?? '';
-    const coverUrl = pick<string>(goal, ['coverImageUrl', 'coverPhotoUrl', 'imageUrl']);
-    const goalCents = pick<number>(goal, ['goalCents', 'goalAmountCents', 'targetCents', 'targetAmountCents']) ?? 0;
-    const raisedCents = pick<number>(goal, ['raisedCents', 'raisedAmountCents', 'amountRaisedCents', 'currentAmountCents']) ?? 0;
-    const url = pick<string>(goal, ['url', 'link', 'campaignUrl']) ?? 'https://www.tweeble.com';
-
-    const img = node.querySelector<HTMLImageElement>('.goal-cover')!;
-    const fallback = node.querySelector<HTMLElement>('.goal-fallback')!;
-    if (coverUrl) {
-      img.src = coverUrl;
-      img.alt = title;
-      img.classList.remove('hidden');
-      fallback.classList.add('hidden');
-    }
-
-    node.querySelector('.goal-title')!.textContent = title;
-    const shareBtn = node.querySelector<HTMLElement>('.share-trigger')!;
-    shareBtn.dataset.shareUrl = url;
-    shareBtn.dataset.shareTitle = title;
-    node.querySelector('.goal-desc')!.textContent = truncate(description, 160);
-
-    const progressWrap = node.querySelector<HTMLElement>('.goal-progress-wrap')!;
-    if (goalCents > 0) {
-      const pct = Math.min(100, Math.round((raisedCents / goalCents) * 100));
-      node.querySelector('.goal-raised')!.textContent = `${money(raisedCents)} raised`;
-      node.querySelector('.goal-percent')!.textContent = `${pct}% of ${money(goalCents)} goal`;
-      node.querySelector<HTMLElement>('.goal-bar')!.style.width = `${pct}%`;
-      node.querySelector('.goal-target')!.textContent = '';
-    } else {
-      progressWrap.classList.add('hidden');
-    }
-
-    const link = node.querySelector<HTMLAnchorElement>('.goal-link')!;
-    link.href = url;
-
-    gridEl.appendChild(node);
-  }
-
-  (async () => {
-    try {
-      const goals = await fetchTweebleFundraising();
-      if (!Array.isArray(goals) || goals.length === 0) {
-        emptyEl?.classList.remove('hidden');
-        return;
-      }
-      goals.forEach(renderGoal);
-    } catch (err) {
-      errorEl?.classList.remove('hidden');
-      console.error('Failed to load Tweeble fundraising goals', err);
-    } finally {
-      loadingEl?.remove();
-    }
-  })();
-</script>

@@ -1,0 +1,168 @@
+---
+// Live grid of the temple's fundraising goals (its "Temple Projects"),
+// rendered in the browser from the Tweeble Fundraising feed so cover photos
+// (short-lived signed URLs) and amounts are always current. Each card links
+// to the project's on-site page when one exists, and always to Tweeble to
+// contribute.
+import Mandala from './Mandala.astro';
+
+interface Props {
+  /** goal id -> on-site page URL */
+  urlMap: Record<string, string>;
+  /** Leave this goal out (used for "other projects" on a project's own page). */
+  excludeId?: string;
+  /** id of a wrapping element to hide when there is nothing to show. */
+  wrapperId?: string;
+}
+const { urlMap, excludeId, wrapperId } = Astro.props;
+---
+
+<div
+  id="goals-root"
+  data-url-map={JSON.stringify(urlMap)}
+  data-exclude-id={excludeId ?? ''}
+  data-wrapper-id={wrapperId ?? ''}
+>
+  <div id="goals-loading" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-live="polite">
+    {[0, 1, 2].map(() => (
+      <div class="card-photo animate-pulse">
+        <div class="h-60 bg-ivory-200"></div>
+        <div class="space-y-3 p-6">
+          <div class="h-5 w-3/4 rounded bg-ivory-200"></div>
+          <div class="h-3 w-full rounded bg-ivory-200"></div>
+          <div class="h-3 w-5/6 rounded bg-ivory-200"></div>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <div id="goals-error" class="hidden rounded-2xl border border-marigold-200 bg-marigold-50 p-8 text-center">
+    <p class="text-ivory-700">We couldn't load the fundraising goals just now. Please try refreshing shortly, or <a href="/contact-us/" class="font-semibold text-maroon-700 underline">contact the temple office</a>.</p>
+  </div>
+
+  <div id="goals-empty" class="hidden">
+    <div class="hero-pattern relative overflow-hidden rounded-2xl">
+      <Mandala class="mandala-decor" opacity={0.18} />
+      <div class="relative z-10 flex flex-col items-center gap-4 px-6 py-16 text-center sm:py-20">
+        <h2 class="max-w-lg text-white">No Active Campaigns Right Now</h2>
+        <p class="max-w-lg text-ivory-100">The temple isn't raising funds for a special project at the moment. As soon as one is added on the Temple Hub, it will appear here automatically.</p>
+        <a href="/online-donations/" class="btn-primary mt-2">Make a General Donation</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="goals-grid" class="flex flex-wrap justify-center gap-6"></div>
+</div>
+
+<template id="goal-card-template">
+  <div class="card-photo group flex w-full flex-col sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]">
+    <div class="relative h-60 overflow-hidden bg-gradient-to-br from-maroon-600 to-maroon-800">
+      <img class="goal-cover hidden h-60 w-full object-cover" loading="lazy" alt="" />
+      <span class="goal-fallback flex h-60 items-center justify-center font-display text-4xl text-marigold-200">ॐ</span>
+      <span class="goal-target absolute right-3 top-3 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-maroon-700 shadow-sm"></span>
+    </div>
+    <div class="flex flex-1 flex-col p-6">
+      <div class="flex items-start justify-between gap-3">
+        <h3 class="goal-title font-display text-xl font-semibold text-maroon-700"></h3>
+        <button type="button" class="share-trigger flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ivory-400 hover:bg-ivory-100 hover:text-maroon-700" aria-label="Share this project">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 10.6 15.4 6.9M8.6 13.4l6.8 3.7" /></svg>
+        </button>
+      </div>
+      <p class="goal-desc mt-2 flex-1 text-sm leading-relaxed text-ivory-600"></p>
+
+      <div class="goal-progress mt-4 hidden">
+        <div class="flex items-baseline justify-between text-sm">
+          <span class="goal-raised font-display font-semibold text-maroon-700"></span>
+          <span class="goal-percent text-xs font-medium text-ivory-500"></span>
+        </div>
+        <div class="mt-1.5 h-2.5 w-full overflow-hidden rounded-full bg-ivory-200">
+          <div class="goal-bar h-full rounded-full bg-marigold-500" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div class="mt-6 flex flex-col gap-3">
+        <a class="goal-details btn-primary hidden w-full">Learn More</a>
+        <a class="goal-contribute btn-ghost w-full" target="_blank" rel="noopener">Contribute on the Temple Hub</a>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  import { fetchTweebleFundraising, formatGoalAmount, truncate, type TweebleFundraisingGoal } from '../lib/tweeble-client';
+  import { initShareButtons } from '../lib/share-widget';
+  initShareButtons();
+
+  const root = document.getElementById('goals-root')!;
+  const loadingEl = document.getElementById('goals-loading');
+  const errorEl = document.getElementById('goals-error');
+  const emptyEl = document.getElementById('goals-empty');
+  const gridEl = document.getElementById('goals-grid')!;
+  const template = document.getElementById('goal-card-template') as HTMLTemplateElement;
+  const urlMap: Record<string, string> = JSON.parse(root.dataset.urlMap ?? '{}');
+  const excludeId = root.dataset.excludeId;
+  const wrapper = root.dataset.wrapperId ? document.getElementById(root.dataset.wrapperId) : null;
+
+  function renderGoal(goal: TweebleFundraisingGoal) {
+    const node = template.content.cloneNode(true) as DocumentFragment;
+
+    const cover = goal.photoUrls?.[0];
+    const img = node.querySelector<HTMLImageElement>('.goal-cover')!;
+    const fallback = node.querySelector<HTMLElement>('.goal-fallback')!;
+    if (cover) {
+      img.src = cover;
+      img.alt = goal.title;
+      img.classList.remove('hidden');
+      fallback.classList.add('hidden');
+    }
+
+    node.querySelector('.goal-title')!.textContent = goal.title;
+    node.querySelector('.goal-desc')!.textContent = truncate(goal.description, 170);
+
+    const target = node.querySelector<HTMLElement>('.goal-target')!;
+    if (goal.targetCents > 0) target.textContent = `Goal ${formatGoalAmount(goal.targetCents)}`;
+    else target.remove();
+
+    if (goal.targetCents > 0 && typeof goal.raisedCents === 'number') {
+      const pct = Math.min(100, Math.round((goal.raisedCents / goal.targetCents) * 100));
+      node.querySelector('.goal-raised')!.textContent = `${formatGoalAmount(goal.raisedCents)} raised`;
+      node.querySelector('.goal-percent')!.textContent = `${pct}% of goal`;
+      node.querySelector<HTMLElement>('.goal-bar')!.style.width = `${pct}%`;
+      node.querySelector('.goal-progress')!.classList.remove('hidden');
+    }
+
+    node.querySelector<HTMLAnchorElement>('.goal-contribute')!.href = goal.url;
+
+    const detailUrl = urlMap[goal.id];
+    if (detailUrl) {
+      const details = node.querySelector<HTMLAnchorElement>('.goal-details')!;
+      details.href = detailUrl;
+      details.classList.remove('hidden');
+    }
+
+    const shareBtn = node.querySelector<HTMLElement>('.share-trigger')!;
+    shareBtn.dataset.shareUrl = detailUrl ? new URL(detailUrl, location.origin).href : goal.url;
+    shareBtn.dataset.shareTitle = goal.title;
+
+    gridEl.appendChild(node);
+  }
+
+  (async () => {
+    try {
+      const all = await fetchTweebleFundraising();
+      const goals = Array.isArray(all) ? all.filter((g) => g.id !== excludeId) : [];
+      if (goals.length === 0) {
+        if (wrapper) wrapper.classList.add('hidden');
+        else emptyEl?.classList.remove('hidden');
+        return;
+      }
+      goals.forEach(renderGoal);
+    } catch (err) {
+      if (wrapper) wrapper.classList.add('hidden');
+      else errorEl?.classList.remove('hidden');
+      console.error('Failed to load Tweeble fundraising goals', err);
+    } finally {
+      loadingEl?.remove();
+    }
+  })();
+</script>

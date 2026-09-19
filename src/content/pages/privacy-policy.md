@@ -19,7 +19,7 @@ Information submitted through this site is used only to respond to your inquiry,
 
 ## Third-Party Services
 
-The site relies on a small number of trusted service providers to function: Stripe for payment processing, Resend for delivering form submissions by email, and Netlify for hosting. Each operates under its own privacy policy governing the data it processes on our behalf.
+The site relies on a small number of trusted service providers to function: Tweeble (the temple's community hub) for donations, volunteer sign-ups, and contact-form submissions, Stripe for payment processing on the Temple Store, and Netlify for hosting. Each operates under its own privacy policy governing the data it processes on our behalf.
 
 ## Your Choices
 

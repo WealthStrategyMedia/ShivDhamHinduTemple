@@ -1,6 +1,20 @@
 ---
 import { NAV, SITE, TWEEBLE } from '../lib/site';
 import SocialIcons from './SocialIcons.astro';
+import { getProgramPages } from '../lib/programs';
+
+const programPages = await getProgramPages();
+const nav = NAV.map((item) =>
+  item.label === 'Programs'
+    ? {
+        ...item,
+        children: [
+          ...item.children!,
+          ...programPages.map(({ slug, program }) => ({ label: program.title, href: `/${slug}/` })),
+        ],
+      }
+    : item,
+);
 
 const path = Astro.url.pathname;
 const isActive = (href: string) => href !== '/' && path.startsWith(href);
@@ -29,7 +43,7 @@ const isActive = (href: string) => href !== '/' && path.startsWith(href);
     </a>
 
     <nav class="hidden lg:flex lg:items-center lg:gap-1" aria-label="Primary">
-      {NAV.map((item) => (
+      {nav.map((item) => (
         <div class="group relative">
           <a
             href={item.href}
@@ -83,7 +97,7 @@ const isActive = (href: string) => href !== '/' && path.startsWith(href);
   <!-- Mobile menu -->
   <div id="mobile-menu" class="hidden border-t border-ivory-200 bg-white lg:hidden">
     <nav class="container-header max-h-[75vh] overflow-y-auto py-3" aria-label="Mobile">
-      {NAV.map((item) => (
+      {nav.map((item) => (
         <details class="group border-b border-ivory-100 py-1 last:border-0">
           <summary class="flex cursor-pointer list-none items-center justify-between py-2.5 text-sm font-medium text-ivory-800">
             <a href={item.href} class="flex-1">{item.label}</a>

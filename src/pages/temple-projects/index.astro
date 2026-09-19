@@ -1,43 +1,25 @@
 ---
-import { getCollection, getEntry } from 'astro:content';
-import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
+import GoalGrid from '../../components/GoalGrid.astro';
 import Mandala from '../../components/Mandala.astro';
+import { getGoalUrlMap } from '../../lib/fundraising';
 import heroImage from '../../assets/photos/congregation-puja.jpg';
 
-const page = await getEntry('pages', 'temple-projects');
-const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const urlMap = await getGoalUrlMap();
 ---
 
-<BaseLayout title="Temple Projects" description={page?.data.summary}>
+<BaseLayout title="Temple Projects" description="The temple's current building and improvement projects, and how the community can help see them through.">
   <PageHero
     eyebrow="Give"
     title="Temple Projects"
-    description="The temple is working toward a building expansion in three parts: a larger prayer hall, new restrooms and showers, and a dedicated administrative office and library. Every contribution, in any amount, helps carry this forward — and is tax deductible."
+    description="The temple's current building and improvement projects, live from the Temple Hub. Every contribution, in any amount, helps carry them forward — and is tax deductible."
     image={heroImage}
     imageAlt="Devotees gathered for worship at the temple"
   />
 
   <div class="container-page py-16 sm:py-20">
-    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {projects.map((project) => (
-        <a href={`/temple-projects/${project.id}/`} class="card-photo group flex flex-col">
-          {project.data.image ? (
-            <Image src={project.data.image} alt={project.data.title} width={480} height={320} class="h-60" />
-          ) : (
-            <div class="flex h-60 items-center justify-center bg-gradient-to-br from-maroon-600 to-maroon-800">
-              <span class="font-display text-4xl text-marigold-200">ॐ</span>
-            </div>
-          )}
-          <div class="flex flex-1 flex-col p-6">
-            <h2 class="font-display text-xl font-semibold text-maroon-700 group-hover:text-marigold-600">{project.data.title}</h2>
-            <p class="mt-2 flex-1 text-sm leading-relaxed text-ivory-600">{project.data.summary}</p>
-            <span class="mt-4 text-sm font-semibold text-marigold-600">Learn more &amp; donate →</span>
-          </div>
-        </a>
-      ))}
-    </div>
+    <GoalGrid urlMap={urlMap} />
 
     <div class="mt-16 hero-pattern relative overflow-hidden rounded-2xl">
       <Mandala class="mandala-decor" opacity={0.18} />
@@ -46,7 +28,7 @@ const projects = (await getCollection('projects')).sort((a, b) => a.data.order -
         <p class="max-w-lg text-ivory-100">
           Materials, labor, and the everyday costs of a project like this add up quickly. All contributions are tax deductible, and every gift, of any size, helps.
         </p>
-        <a href="/online-donations/" class="btn-primary">Donate to Temple Projects</a>
+        <a href="/online-donations/" class="btn-primary">Make a General Donation</a>
       </div>
     </div>
   </div>

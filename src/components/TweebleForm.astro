@@ -1,0 +1,223 @@
+---
+// A contact-style form driven entirely by the temple's Tweeble account.
+// The browser GETs the form's field schema from `formUrl` and renders it
+// in the site's own styling, then POSTs the answers back to that same URL,
+// so submissions are tracked (and emailed) by Tweeble. Editing a form in
+// Tweeble changes it here on the next page load — no redeploy needed.
+import { SITE } from '../lib/site';
+
+interface Props {
+  formUrl: string;
+}
+const { formUrl } = Astro.props;
+---
+
+<div class="tweeble-form" data-form-url={formUrl}>
+  <div class="tf-loading card animate-pulse space-y-5 p-6 sm:p-8" aria-live="polite">
+    <div class="grid gap-5 sm:grid-cols-2">
+      <div class="h-11 rounded-lg bg-ivory-200"></div>
+      <div class="h-11 rounded-lg bg-ivory-200"></div>
+    </div>
+    <div class="h-11 w-1/2 rounded-lg bg-ivory-200"></div>
+    <div class="h-36 rounded-lg bg-ivory-200"></div>
+    <div class="h-11 w-40 rounded-full bg-ivory-200"></div>
+  </div>
+
+  <div class="tf-error card hidden p-8 text-center">
+    <p class="text-ivory-700">We couldn't load this form just now. Please refresh the page, or reach the temple office directly:</p>
+    <p class="mt-3 text-sm font-medium text-maroon-700">
+      <a href={SITE.phoneHref} class="underline">{SITE.phone}</a> &middot;
+      <a href={`mailto:${SITE.email}`} class="underline">{SITE.email}</a>
+    </p>
+  </div>
+
+  <form class="tf-form card hidden space-y-5 p-6 sm:p-8" novalidate>
+    <div class="tf-fields grid gap-5 sm:grid-cols-2"></div>
+
+    <!-- Honeypot field: hidden from real visitors, catches simple bots -->
+    <div class="hidden" aria-hidden="true">
+      <label>Company <input name="company" type="text" tabindex="-1" autocomplete="off" /></label>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-4">
+      <button type="submit" class="tf-submit btn-primary w-full sm:w-auto"></button>
+      <p class="tf-status text-sm" role="status" aria-live="polite"></p>
+    </div>
+  </form>
+
+  <div class="tf-success card hidden flex-col items-center gap-3 p-10 text-center" role="status">
+    <span class="flex h-14 w-14 items-center justify-center rounded-full bg-marigold-100 text-maroon-600">
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
+    </span>
+    <p class="tf-success-message max-w-md font-display text-xl text-maroon-700"></p>
+    <p class="text-sm text-ivory-600">The temple office will be in touch if a reply is needed.</p>
+  </div>
+</div>
+
+<script>
+  import { fetchTweebleFormSchema, type TweebleFormField, type TweebleFormSchema } from '../lib/tweeble-client';
+
+  const INPUT_CLASS =
+    'mt-1.5 w-full rounded-lg border border-ivory-300 bg-white px-3.5 py-2.5 text-sm focus:border-maroon-400';
+
+  const AUTOCOMPLETE: Record<string, string> = { full_name: 'name', email: 'email', phone: 'tel' };
+
+  // Tweeble stores multi-part prompts as one string separated by double
+  // spaces ("Child's full name:  Date of birth:  ..."). Split it back out so
+  // long-answer fields can start pre-filled with one prompt per line.
+  function promptSegments(text: string | undefined): string[] {
+    return (text ?? '').split(/\s{2,}/).map((s) => s.trim()).filter(Boolean);
+  }
+
+  function prefillFrom(segments: string[]): string {
+    return segments.map((s) => (s.endsWith(':') ? `${s} \n` : `${s}\n\n`)).join('');
+  }
+
+  function isLongAnswer(field: TweebleFormField): boolean {
+    return field.type === 'textarea' || field.preset === 'custom_text' || field.preset === 'message';
+  }
+
+  function buildField(field: TweebleFormField, serviceRequest: string | null): HTMLElement {
+    const wrap = document.createElement('div');
+    const long = isLongAnswer(field);
+    if (long) wrap.className = 'sm:col-span-2';
+
+    const inputId = `tf-${field.id}`;
+    const label = document.createElement('label');
+    label.htmlFor = inputId;
+    label.className = 'block text-sm font-medium text-ivory-800';
+    label.textContent = field.label;
+    if (!field.required) {
+      const optional = document.createElement('span');
+      optional.className = 'text-ivory-400';
+      optional.textContent = ' (optional)';
+      label.appendChild(optional);
+    }
+    wrap.appendChild(label);
+
+    const promptSource = field.helpText && promptSegments(field.helpText).length > 1 ? field.helpText : field.placeholder;
+    const segments = long ? promptSegments(promptSource) : [];
+    const hasPromptList = segments.length > 1;
+
+    if (field.helpText && !hasPromptList) {
+      const help = document.createElement('p');
+      help.className = 'mt-0.5 text-xs text-ivory-500';
+      help.textContent = field.helpText;
+      wrap.appendChild(help);
+    }
+
+    let control: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+    if (long) {
+      const textarea = document.createElement('textarea');
+      textarea.rows = hasPromptList ? 9 : 6;
+      if (serviceRequest) textarea.value = `I'd like to request: ${serviceRequest}\n\n`;
+      else if (hasPromptList) textarea.value = prefillFrom(segments);
+      else if (field.placeholder) textarea.placeholder = field.placeholder;
+      control = textarea;
+    } else if (field.type === 'select' && field.options?.length) {
+      const select = document.createElement('select');
+      const blank = document.createElement('option');
+      blank.value = '';
+      blank.textContent = field.placeholder ?? 'Select…';
+      select.appendChild(blank);
+      for (const opt of field.options) {
+        const o = document.createElement('option');
+        o.value = opt;
+        o.textContent = opt;
+        select.appendChild(o);
+      }
+      control = select;
+    } else {
+      const input = document.createElement('input');
+      input.type = ['email', 'tel', 'number', 'url', 'date'].includes(field.type) ? field.type : 'text';
+      if (field.placeholder) input.placeholder = field.placeholder;
+      const auto = AUTOCOMPLETE[field.preset];
+      if (auto) input.autocomplete = auto;
+      control = input;
+    }
+
+    control.id = inputId;
+    control.name = field.id;
+    control.required = field.required;
+    control.className = INPUT_CLASS;
+    wrap.appendChild(control);
+    return wrap;
+  }
+
+  function initForm(root: HTMLElement) {
+    const formUrl = root.dataset.formUrl!;
+    const loading = root.querySelector<HTMLElement>('.tf-loading')!;
+    const errorBox = root.querySelector<HTMLElement>('.tf-error')!;
+    const form = root.querySelector<HTMLFormElement>('.tf-form')!;
+    const fieldsEl = root.querySelector<HTMLElement>('.tf-fields')!;
+    const submitBtn = root.querySelector<HTMLButtonElement>('.tf-submit')!;
+    const statusEl = root.querySelector<HTMLElement>('.tf-status')!;
+    const successBox = root.querySelector<HTMLElement>('.tf-success')!;
+
+    const serviceRequest = new URLSearchParams(location.search).get('service');
+    let schema: TweebleFormSchema | null = null;
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!schema) return;
+
+      if (new FormData(form).get('company')) return; // honeypot tripped, silently drop
+
+      const body: Record<string, string> = {};
+      for (const field of schema.fields) {
+        const el = form.elements.namedItem(field.id) as HTMLInputElement | null;
+        const value = el?.value.trim() ?? '';
+        if (field.required && !value) {
+          statusEl.textContent = `Please fill in “${field.label}”.`;
+          statusEl.className = 'tf-status text-sm text-maroon-600';
+          el?.focus();
+          return;
+        }
+        if (value) body[field.id] = value;
+      }
+
+      submitBtn.disabled = true;
+      statusEl.textContent = 'Sending…';
+      statusEl.className = 'tf-status text-sm text-ivory-600';
+
+      try {
+        const res = await fetch(formUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.error) throw new Error(data.error ?? 'Request failed');
+        root.querySelector('.tf-success-message')!.textContent = schema.successMessage;
+        form.classList.add('hidden');
+        successBox.classList.remove('hidden');
+        successBox.classList.add('flex');
+        successBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } catch (err) {
+        statusEl.textContent =
+          err instanceof Error && err.message !== 'Request failed'
+            ? err.message
+            : 'Something went wrong. Please try again or contact the temple office directly.';
+        statusEl.className = 'tf-status text-sm text-maroon-600';
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    (async () => {
+      try {
+        schema = await fetchTweebleFormSchema(formUrl);
+        for (const field of schema.fields) fieldsEl.appendChild(buildField(field, serviceRequest));
+        submitBtn.textContent = schema.submitLabel || 'Send';
+        form.classList.remove('hidden');
+      } catch (err) {
+        errorBox.classList.remove('hidden');
+        console.error('Failed to load Tweeble form', err);
+      } finally {
+        loading.remove();
+      }
+    })();
+  }
+
+  document.querySelectorAll<HTMLElement>('.tweeble-form').forEach(initForm);
+</script>
