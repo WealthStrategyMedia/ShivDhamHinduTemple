@@ -1,4 +1,5 @@
 ---
+import { TWEEBLE } from '../../lib/site';
 import { getCollection } from 'astro:content';
 import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
@@ -17,7 +18,7 @@ const moreFromTemple = services
   .sort((a, b) => a.data.order - b.data.order);
 ---
 
-<BaseLayout title="Temple Store" description="Order festival thalis, register a Shravan Mela vendor booth, and more from Shri Shiv Dham Hindu Temple.">
+<BaseLayout feeds={[TWEEBLE.api.products]} title="Temple Store" description="Order festival thalis, register a Shravan Mela vendor booth, and more from Shri Shiv Dham Hindu Temple.">
   <PageHero
     eyebrow="Store"
     title="Temple Store"
@@ -108,28 +109,31 @@ const moreFromTemple = services
 </BaseLayout>
 
 <template id="tweeble-product-card-template">
-  <a class="card-photo group" target="_blank" rel="noopener">
+  <div class="card-photo group flex flex-col">
     <div class="relative h-52 overflow-hidden bg-gradient-to-br from-maroon-600 to-maroon-800">
       <img class="product-cover hidden h-52 w-full object-cover" loading="lazy" alt="" />
       <span class="product-fallback flex h-52 items-center justify-center font-display text-3xl text-marigold-200">ॐ</span>
     </div>
-    <div class="p-6">
-      <h3 class="product-name font-display text-base font-semibold text-maroon-700 group-hover:text-marigold-600"></h3>
-      <p class="product-desc mt-2 text-sm text-ivory-600 line-clamp-2"></p>
+    <div class="flex flex-1 flex-col p-6">
+      <h3 class="product-name font-display text-base font-semibold text-maroon-700"></h3>
+      <p class="product-desc mt-2 flex-1 text-sm text-ivory-600 line-clamp-2"></p>
       <div class="mt-3 flex items-center justify-between">
         <p class="product-price font-display text-lg font-semibold text-maroon-700"></p>
         <button type="button" class="share-trigger flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ivory-400 hover:bg-ivory-100 hover:text-maroon-700" aria-label="Share this product">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 10.6 15.4 6.9M8.6 13.4l6.8 3.7" /></svg>
         </button>
       </div>
+      <button type="button" class="product-buy btn-primary mt-4 w-full" data-buy data-buy-type="product">Buy Now</button>
     </div>
-  </a>
+  </div>
 </template>
 
 <script>
   import { fetchTweebleProducts, pick, formatCents, truncate, type TweebleProduct } from '../../lib/tweeble-client';
   import { initShareButtons } from '../../lib/share-widget';
+  import { initCheckoutButtons } from '../../lib/checkout';
   initShareButtons();
+  initCheckoutButtons();
 
   (async () => {
     try {
@@ -149,8 +153,12 @@ const moreFromTemple = services
         const priceCents = pick<number>(product, ['priceCents', 'price']) ?? 0;
         const url = pick<string>(product, ['url', 'link']) ?? 'https://www.tweeble.com';
 
-        const link = node.querySelector('a')!;
-        link.href = url;
+        const buy = node.querySelector<HTMLButtonElement>('.product-buy')!;
+        buy.dataset.buyItem = product.id;
+        buy.dataset.buyTitle = name;
+        buy.dataset.buyFallback = url;
+        const embedUrl = pick<string>(product, ['embedUrl']);
+        if (embedUrl) buy.dataset.buyEmbed = embedUrl;
 
         const shareBtn = node.querySelector<HTMLElement>('.share-trigger')!;
         shareBtn.dataset.shareUrl = url;

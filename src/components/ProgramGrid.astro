@@ -89,7 +89,7 @@ const { urlMap, excludeId, wrapperId } = Astro.props;
       </dl>
 
       <div class="mt-6 flex flex-1 flex-wrap items-end gap-3">
-        <a class="program-signup btn-primary flex-1 whitespace-nowrap" target="_blank" rel="noopener">Register on the Temple Hub</a>
+        <button type="button" class="program-signup btn-primary flex-1 whitespace-nowrap" data-buy data-buy-type="program"></button>
         <a class="program-details btn-ghost flex-1 whitespace-nowrap hidden">Learn More</a>
       </div>
     </div>
@@ -97,9 +97,12 @@ const { urlMap, excludeId, wrapperId } = Astro.props;
 </template>
 
 <script>
-  import { fetchTweeblePrograms, formatCents, formatEventDate, truncate, type TweebleProgram } from '../lib/tweeble-client';
+  import { loadFeed, formatCents, formatEventDate, truncate, type TweebleProgram } from '../lib/tweeble-client';
+  import { TWEEBLE } from '../lib/site';
   import { initShareButtons } from '../lib/share-widget';
+  import { initCheckoutButtons, programButtonLabel } from '../lib/checkout';
   initShareButtons();
+  initCheckoutButtons();
 
   const root = document.getElementById('programs-root')!;
   const loadingEl = document.getElementById('programs-loading');
@@ -137,7 +140,12 @@ const { urlMap, excludeId, wrapperId } = Astro.props;
     setOrHide(node, '.program-location-row', '.program-location', program.locationLabel);
     setOrHide(node, '.program-age-row', '.program-age', program.minimumAge ? `${program.minimumAge}+` : null);
 
-    node.querySelector<HTMLAnchorElement>('.program-signup')!.href = program.url;
+    const buy = node.querySelector<HTMLButtonElement>('.program-signup')!;
+    buy.textContent = programButtonLabel(program.isFree);
+    buy.dataset.buyItem = program.id;
+    buy.dataset.buyTitle = program.title;
+    buy.dataset.buyFallback = program.url;
+    if (program.embedUrl) buy.dataset.buyEmbed = program.embedUrl;
 
     const detailUrl = urlMap[program.id];
     if (detailUrl) {
@@ -153,22 +161,22 @@ const { urlMap, excludeId, wrapperId } = Astro.props;
     gridEl.appendChild(node);
   }
 
-  (async () => {
-    try {
-      const all = await fetchTweeblePrograms();
-      const programs = Array.isArray(all) ? all.filter((p) => p.id !== excludeId) : [];
-      if (programs.length === 0) {
-        if (wrapper) wrapper.classList.add('hidden');
-        else emptyEl?.classList.remove('hidden');
-        return;
-      }
-      programs.forEach(renderProgram);
-    } catch (err) {
-      if (wrapper) wrapper.classList.add('hidden');
-      else errorEl?.classList.remove('hidden');
-      console.error('Failed to load Tweeble programs', err);
-    } finally {
-      loadingEl?.remove();
-    }
-  })();
+  // Redraws the whole grid, so it can run twice: once from the last copy of
+  // the feed (instant), then again only if the live feed differs.
+  function render(all: TweebleProgram[]) {
+    const programs = Array.isArray(all) ? all.filter((p) => p.id !== excludeId) : [];
+    gridEl.replaceChildren();
+    loadingEl?.remove();
+    const none = programs.length === 0;
+    if (wrapper) wrapper.classList.toggle('hidden', none);
+    else emptyEl?.classList.toggle('hidden', !none);
+    programs.forEach(renderProgram);
+  }
+
+  loadFeed<TweebleProgram[]>(TWEEBLE.api.programs, render).catch((err) => {
+    loadingEl?.remove();
+    if (wrapper) wrapper.classList.add('hidden');
+    else errorEl?.classList.remove('hidden');
+    console.error('Failed to load Tweeble programs', err);
+  });
 </script>

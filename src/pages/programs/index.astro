@@ -1,4 +1,5 @@
 ---
+import { TWEEBLE } from '../../lib/site';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
 import ProgramGrid from '../../components/ProgramGrid.astro';
@@ -8,7 +9,7 @@ import danceHero from '../../assets/photos/dance-classes.png';
 const urlMap = await getProgramUrlMap();
 ---
 
-<BaseLayout title="Programs & Classes" description="Ongoing classes and programs at Shri Shiv Dham Hindu Temple, live from the Temple Hub.">
+<BaseLayout feeds={[TWEEBLE.api.programs]} title="Programs & Classes" description="Ongoing classes and programs at Shri Shiv Dham Hindu Temple, live from the Temple Hub.">
   <PageHero
     eyebrow="Learn"
     title="Programs &amp; Classes"

@@ -1,4 +1,5 @@
 ---
+import { TWEEBLE } from '../../lib/site';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
 import GoalGrid from '../../components/GoalGrid.astro';
@@ -9,7 +10,7 @@ import heroImage from '../../assets/photos/congregation-puja.jpg';
 const urlMap = await getGoalUrlMap();
 ---
 
-<BaseLayout title="Temple Projects" description="The temple's current building and improvement projects, and how the community can help see them through.">
+<BaseLayout feeds={[TWEEBLE.api.fundraising]} title="Temple Projects" description="The temple's current building and improvement projects, and how the community can help see them through.">
   <PageHero
     eyebrow="Give"
     title="Temple Projects"

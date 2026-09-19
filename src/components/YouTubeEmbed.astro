@@ -1,6 +1,12 @@
 ---
 // Responsive YouTube embed — `orientation="portrait"` for Shorts (9:16),
 // the default "landscape" for standard 16:9 video.
+//
+// Click-to-play: the page shows YouTube's own thumbnail (about 25 KB) and only
+// loads the actual player when the visitor presses play. YouTube's player pulls
+// in well over a megabyte of scripts, so loading it up front would slow down
+// every page that has a video, for visitors who never watch it. It also uses
+// the privacy-friendly youtube-nocookie.com domain.
 interface Props {
   id: string;
   title: string;
@@ -10,15 +16,26 @@ interface Props {
 const { id, title, orientation = 'landscape', class: className = '' } = Astro.props;
 ---
 
-<div class:list={['overflow-hidden rounded-2xl bg-ivory-100 shadow-lift', orientation === 'portrait' ? 'aspect-[9/16]' : 'aspect-video', className]}>
-  <iframe
-    class="h-full w-full"
-    src={`https://www.youtube.com/embed/${id}`}
-    title={title}
-    frameborder="0"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-    referrerpolicy="strict-origin-when-cross-origin"
-    loading="lazy"
-    allowfullscreen
-  ></iframe>
+<div
+  class:list={['yt-embed relative overflow-hidden rounded-2xl bg-maroon-800 shadow-lift', orientation === 'portrait' ? 'aspect-[9/16]' : 'aspect-video', className]}
+  data-yt-id={id}
+  data-yt-title={title}
+>
+  <button type="button" class="group absolute inset-0 block h-full w-full cursor-pointer" aria-label={`Play video: ${title}`}>
+    <img
+      src={`https://i.ytimg.com/vi/${id}/hqdefault.jpg`}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      class="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+    />
+    <span class="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/10"></span>
+    <span class="absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-marigold-500 text-maroon-800 shadow-lift ring-4 ring-white/40 transition group-hover:scale-110 group-hover:bg-marigold-400">
+      <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" aria-hidden="true" class="ml-1"><path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11.04-6.86a1 1 0 0 0 0-1.72L9.5 4.28A1 1 0 0 0 8 5.14Z" /></svg>
+    </span>
+  </button>
+  <noscript>
+    <a href={`https://www.youtube.com/watch?v=${id}`} class="absolute inset-0 flex items-center justify-center p-6 text-center text-sm font-semibold text-white underline">Watch “{title}” on YouTube</a>
+  </noscript>
 </div>
+

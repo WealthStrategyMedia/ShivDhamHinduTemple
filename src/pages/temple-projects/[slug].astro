@@ -1,4 +1,5 @@
 ---
+import { TWEEBLE } from '../../lib/site';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
 import GoalGrid from '../../components/GoalGrid.astro';
@@ -17,7 +18,7 @@ const firstParagraph = (goal.description.split(/\r?\n\r?\n/)[0] ?? '').replace(/
 const summary = firstParagraph.match(/^.{20,260}?[.!?](?=\s|$)/)?.[0] ?? truncate(firstParagraph, 200);
 ---
 
-<BaseLayout title={goal.title} description={summary}>
+<BaseLayout feeds={[TWEEBLE.api.fundraising]} title={goal.title} description={summary}>
   <PageHero eyebrow="Temple Projects" title={goal.title} description={summary} compact>
     <div class="mt-7 flex flex-wrap items-center gap-2.5 text-sm text-ivory-50">
       {goal.targetCents > 0 && (
@@ -31,7 +32,7 @@ const summary = firstParagraph.match(/^.{20,260}?[.!?](?=\s|$)/)?.[0] ?? truncat
         Tax deductible
       </span>
     </div>
-    <a href={goal.url} target="_blank" rel="noopener" class="btn-primary mt-8">Contribute on the Temple Hub</a>
+    <button type="button" class="btn-primary mt-8" data-goal-cta-hero data-buy data-buy-type="fundraising" data-buy-item={goal.id} data-buy-title={goal.title} data-buy-fallback={goal.url} data-buy-embed={goal.embedUrl}>Donate to This Project</button>
   </PageHero>
 
   <div class="container-page grid gap-10 py-14 sm:py-16 lg:grid-cols-[3fr_2fr] lg:items-start" data-goal-page data-goal-id={goal.id}>
@@ -65,9 +66,9 @@ const summary = firstParagraph.match(/^.{20,260}?[.!?](?=\s|$)/)?.[0] ?? truncat
           </div>
         </div>
 
-        <a href={goal.url} target="_blank" rel="noopener" class="btn-primary mt-6 w-full" data-goal-cta>Contribute on the Temple Hub</a>
+        <button type="button" class="btn-primary mt-6 w-full" data-goal-cta data-buy data-buy-type="fundraising" data-buy-item={goal.id} data-buy-title={goal.title} data-buy-fallback={goal.url} data-buy-embed={goal.embedUrl}>Donate to This Project</button>
         <p class="mt-4 text-center text-xs text-ivory-500">
-          Contributions are made securely on the Temple Hub and go directly toward this project. All gifts are tax deductible.
+          Give right here, securely. Your gift counts directly toward this project, and all gifts are tax deductible.
         </p>
       </div>
 
@@ -94,7 +95,9 @@ const summary = firstParagraph.match(/^.{20,260}?[.!?](?=\s|$)/)?.[0] ?? truncat
 <script>
   import { fetchTweebleFundraising, formatGoalAmount } from '../../lib/tweeble-client';
   import { initShareButtons } from '../../lib/share-widget';
+  import { initCheckoutButtons } from '../../lib/checkout';
   initShareButtons();
+  initCheckoutButtons();
 
   const page = document.querySelector<HTMLElement>('[data-goal-page]');
 
@@ -107,10 +110,12 @@ const summary = firstParagraph.match(/^.{20,260}?[.!?](?=\s|$)/)?.[0] ?? truncat
         if (!goal) {
           // The Fundraising feed is the source of truth: if this project is
           // no longer listed, don't invite contributions to it.
-          document.querySelectorAll<HTMLAnchorElement>('[data-goal-cta]').forEach((a) => {
-            a.textContent = 'See Current Projects';
-            a.href = '/temple-projects/';
-            a.removeAttribute('target');
+          document.querySelectorAll<HTMLElement>('[data-goal-cta], [data-goal-cta-hero]').forEach((btn) => {
+            const link = document.createElement('a');
+            link.className = btn.className;
+            link.href = '/temple-projects/';
+            link.textContent = 'See Current Projects';
+            btn.replaceWith(link);
           });
           return;
         }
@@ -118,13 +123,14 @@ const summary = firstParagraph.match(/^.{20,260}?[.!?](?=\s|$)/)?.[0] ?? truncat
         if (goal.targetCents > 0) {
           const target = page.querySelector('[data-goal-target]');
           if (target) target.textContent = formatGoalAmount(goal.targetCents);
-          if (typeof goal.raisedCents === 'number') {
-            const pct = Math.min(100, Math.round((goal.raisedCents / goal.targetCents) * 100));
-            page.querySelector('[data-goal-raised]')!.textContent = `${formatGoalAmount(goal.raisedCents)} raised`;
-            page.querySelector('[data-goal-percent]')!.textContent = `${pct}% of goal`;
-            page.querySelector<HTMLElement>('[data-goal-bar]')!.style.width = `${pct}%`;
-            page.querySelector('[data-goal-progress]')!.classList.remove('hidden');
-          }
+          const raised = goal.raisedCents ?? 0;
+          const pct = Math.min(100, Math.round((raised / goal.targetCents) * 100));
+          const donors = goal.donorCount ?? 0;
+          page.querySelector('[data-goal-raised]')!.textContent = raised > 0 ? `${formatGoalAmount(raised)} raised` : 'Be the first to give';
+          page.querySelector('[data-goal-percent]')!.textContent =
+            raised > 0 ? `${pct}% of goal${donors > 0 ? ` · ${donors} donor${donors === 1 ? '' : 's'}` : ''}` : '';
+          page.querySelector<HTMLElement>('[data-goal-bar]')!.style.width = `${pct}%`;
+          page.querySelector('[data-goal-progress]')!.classList.remove('hidden');
         }
 
         const photos = goal.photoUrls ?? [];

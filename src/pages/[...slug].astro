@@ -4,8 +4,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
 import ProgramGrid from '../components/ProgramGrid.astro';
 import Mandala from '../components/Mandala.astro';
-import { SITE } from '../lib/site';
+import { SITE, TWEEBLE } from '../lib/site';
 import { formatCents } from '../lib/tweeble-client';
+import { programButtonLabel } from '../lib/checkout';
 import { getProgramPages, getProgramUrlMap, PROGRAM_EXTRA_LINKS } from '../lib/programs';
 import { descriptionToHtml } from '../lib/description';
 
@@ -64,6 +65,7 @@ const heroImageAlt = entry?.data.heroAlt;
 
 const programUrlMap = program ? await getProgramUrlMap() : {};
 const extraLink = program ? PROGRAM_EXTRA_LINKS[program.title.trim().toLowerCase()] : undefined;
+const buyLabel = program ? programButtonLabel(program.isFree) : '';
 const programCost = program ? (program.isFree ? 'Free' : formatCents(program.priceCents)) : '';
 
 // General pages get a "keep exploring" card so the page never just dead-ends in text.
@@ -74,7 +76,7 @@ const EXPLORE_MORE = [
 ].filter((l) => l.href !== `/${entry?.id}/`);
 ---
 
-<BaseLayout title={title} description={description} noindex={entry ? entry.data.noindex : false}>
+<BaseLayout feeds={program ? [TWEEBLE.api.programs] : []} title={title} description={description} noindex={entry ? entry.data.noindex : false}>
   <PageHero
     eyebrow={program ? 'Programs' : SITE.shortName}
     title={title}
@@ -103,7 +105,7 @@ const EXPLORE_MORE = [
             </span>
           )}
         </div>
-        <a href={program.url} target="_blank" rel="noopener" class="btn-primary mt-8" data-program-cta-hero>Register on the Temple Hub</a>
+        <button type="button" class="btn-primary mt-8" data-program-cta-hero data-buy data-buy-type="program" data-buy-item={program.id} data-buy-title={program.title} data-buy-fallback={program.url} data-buy-embed={program.embedUrl}>{buyLabel}</button>
       </>
     )}
   </PageHero>
@@ -156,9 +158,9 @@ const EXPLORE_MORE = [
                 </div>
               </dl>
 
-              <a href={program.url} target="_blank" rel="noopener" class="btn-primary mt-6 w-full" data-program-cta>Register on the Temple Hub</a>
+              <button type="button" class="btn-primary mt-6 w-full" data-program-cta data-buy data-buy-type="program" data-buy-item={program.id} data-buy-title={program.title} data-buy-fallback={program.url} data-buy-embed={program.embedUrl}>{buyLabel}</button>
               {extraLink && <a href={extraLink.href} class="btn-ghost mt-3 w-full">{extraLink.label}</a>}
-              <p class="mt-4 text-center text-xs text-ivory-500">Registration and payment happen securely on the Temple Hub. Questions first? <a href="/contact-us/" class="underline">Contact the temple office</a>.</p>
+              <p class="mt-4 text-center text-xs text-ivory-500">Register and pay right here, securely. Questions first? <a href="/contact-us/" class="underline">Contact the temple office</a>.</p>
             </div>
           </div>
         ) : (
@@ -212,6 +214,8 @@ const EXPLORE_MORE = [
 
 <script>
   import { fetchTweeblePrograms, formatCents, formatEventDate } from '../lib/tweeble-client';
+  import { initCheckoutButtons, programButtonLabel } from '../lib/checkout';
+  initCheckoutButtons();
 
   const card = document.querySelector<HTMLElement>('[data-program-card]');
 
@@ -227,15 +231,17 @@ const EXPLORE_MORE = [
         if (!program) {
           // The Programs feed is the source of truth: if this program is no
           // longer listed there, don't invite sign-ups for it.
-          document.querySelectorAll<HTMLAnchorElement>('[data-program-cta], [data-program-cta-hero]').forEach((a) => {
-            a.textContent = 'See Current Programs';
-            a.href = '/programs/';
-            a.removeAttribute('target');
+          document.querySelectorAll<HTMLElement>('[data-program-cta], [data-program-cta-hero]').forEach((btn) => {
+            const link = document.createElement('a');
+            link.className = btn.className;
+            link.href = '/programs/';
+            link.textContent = 'See Current Programs';
+            btn.replaceWith(link);
           });
           const note = document.createElement('p');
           note.className = 'mt-5 rounded-xl bg-marigold-50 px-4 py-3 text-sm text-ivory-700';
           note.textContent = "This program isn't currently scheduled. See what's running now:";
-          card.querySelector('[data-program-cta]')?.before(note);
+          card.querySelector('[data-program-cta], a.btn-primary')?.before(note);
           return;
         }
 
@@ -248,6 +254,10 @@ const EXPLORE_MORE = [
           row?.classList.remove('hidden');
           row?.classList.add('flex');
         }
+
+        document.querySelectorAll<HTMLElement>('[data-program-cta], [data-program-cta-hero]').forEach((btn) => {
+          btn.textContent = programButtonLabel(program.isFree);
+        });
 
         if (program.coverPhotoUrl) {
           const img = card.querySelector<HTMLImageElement>('[data-program-cover]')!;

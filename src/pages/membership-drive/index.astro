@@ -1,4 +1,5 @@
 ---
+import { TWEEBLE } from '../../lib/site';
 import { getEntry, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
@@ -8,7 +9,7 @@ const page = await getEntry('pages', 'membership-drive');
 const { Content } = page ? await render(page) : { Content: null };
 ---
 
-<BaseLayout title={page?.data.title ?? 'Membership Drive'} description={page?.data.summary}>
+<BaseLayout feeds={[TWEEBLE.api.membership]} title={page?.data.title ?? 'Membership Drive'} description={page?.data.summary}>
   <PageHero
     eyebrow="Give"
     title={page?.data.title ?? 'Membership Drive'}
@@ -31,7 +32,7 @@ const { Content } = page ? await render(page) : { Content: null };
     <div class="mx-auto max-w-2xl text-center">
       <p class="eyebrow">Join Today</p>
       <h2 class="mt-2">Membership Packages</h2>
-      <p class="mt-4 text-ivory-600">Choose a membership package and sign up directly, live from the Temple Hub.</p>
+      <p class="mt-4 text-ivory-600">Choose a membership package and sign up right here, live from the Temple Hub.</p>
     </div>
 
     <div id="membership-loading" class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-live="polite">
@@ -67,15 +68,18 @@ const { Content } = page ? await render(page) : { Content: null };
     </div>
     <p class="package-price mt-1 font-display text-2xl font-semibold text-marigold-600"></p>
     <p class="package-desc mt-3 flex-1 text-sm leading-relaxed text-ivory-600"></p>
-    <ul class="package-benefits mt-3 hidden space-y-1.5 text-sm text-ivory-700"></ul>
-    <a class="package-link btn-primary mt-5 w-full" target="_blank" rel="noopener">Join on the Temple Hub</a>
+    <ul class="package-benefits mt-4 hidden flex-1 space-y-2 text-sm text-ivory-700"></ul>
+    <button type="button" class="package-link btn-primary mt-5 w-full" data-buy data-buy-type="membership">Join Now</button>
   </div>
 </template>
 
 <script>
-  import { fetchTweebleMembership, pick, truncate, type TweebleMembershipPackage } from '../../lib/tweeble-client';
+  import { loadFeed, type TweebleMembershipPackage } from '../../lib/tweeble-client';
+  import { TWEEBLE } from '../../lib/site';
   import { initShareButtons } from '../../lib/share-widget';
+  import { initCheckoutButtons } from '../../lib/checkout';
   initShareButtons();
+  initCheckoutButtons();
 
   const loadingEl = document.getElementById('membership-loading');
   const errorEl = document.getElementById('membership-error');
@@ -83,28 +87,27 @@ const { Content } = page ? await render(page) : { Content: null };
   const gridEl = document.getElementById('membership-grid');
   const template = document.getElementById('membership-card-template') as HTMLTemplateElement | null;
 
-  function money(cents: number, cadence?: string): string {
-    const amount = `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
-    return cadence ? `${amount} / ${cadence}` : amount;
+  const CADENCE: Record<string, string> = { monthly: 'month', quarterly: 'quarter', annual: 'year', yearly: 'year', weekly: 'week' };
+
+  function money(cents: number): string {
+    return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
   }
 
   function renderPackage(pkg: TweebleMembershipPackage) {
     if (!gridEl || !template) return;
     const node = template.content.cloneNode(true) as DocumentFragment;
 
-    const name = pick<string>(pkg, ['name', 'title']) ?? 'Membership';
-    const description = pick<string>(pkg, ['description', 'summary']) ?? '';
-    const priceCents = pick<number>(pkg, ['priceCents', 'price']) ?? 0;
-    const cadence = pick<string>(pkg, ['subscriptionCadence', 'cadence', 'billingCycle', 'interval']);
-    const benefits = pick<string[]>(pkg, ['benefits', 'perks', 'includes']);
-    const url = pick<string>(pkg, ['url', 'link']) ?? 'https://www.tweeble.com';
+    const name = `${pkg.title} Membership`;
+    const cadence = CADENCE[pkg.billingInterval] ?? pkg.billingInterval;
+    const benefits = pkg.incentives;
+    const url = pkg.url;
 
     node.querySelector('.package-name')!.textContent = name;
     const shareBtn = node.querySelector<HTMLElement>('.share-trigger')!;
     shareBtn.dataset.shareUrl = url;
     shareBtn.dataset.shareTitle = name;
-    node.querySelector('.package-price')!.textContent = money(priceCents, cadence ?? undefined);
-    node.querySelector('.package-desc')!.textContent = truncate(description, 140);
+    node.querySelector('.package-price')!.textContent = cadence ? `${money(pkg.priceCents)} / ${cadence}` : money(pkg.priceCents);
+    node.querySelector('.package-desc')!.remove();
 
     if (Array.isArray(benefits) && benefits.length > 0) {
       const list = node.querySelector('.package-benefits')!;
@@ -118,25 +121,26 @@ const { Content } = page ? await render(page) : { Content: null };
       }
     }
 
-    const link = node.querySelector<HTMLAnchorElement>('.package-link')!;
-    link.href = url;
+    const join = node.querySelector<HTMLButtonElement>('.package-link')!;
+    join.dataset.buyItem = pkg.id;
+    join.dataset.buyTitle = name;
+    join.dataset.buyFallback = url;
+    if (pkg.embedUrl) join.dataset.buyEmbed = pkg.embedUrl;
 
     gridEl.appendChild(node);
   }
 
-  (async () => {
-    try {
-      const packages = await fetchTweebleMembership();
-      if (!Array.isArray(packages) || packages.length === 0) {
-        emptyEl?.classList.remove('hidden');
-        return;
-      }
-      packages.forEach(renderPackage);
-    } catch (err) {
-      errorEl?.classList.remove('hidden');
-      console.error('Failed to load Tweeble membership packages', err);
-    } finally {
-      loadingEl?.remove();
-    }
-  })();
+  function render(packages: TweebleMembershipPackage[]) {
+    gridEl?.replaceChildren();
+    loadingEl?.remove();
+    const none = !Array.isArray(packages) || packages.length === 0;
+    emptyEl?.classList.toggle('hidden', !none);
+    if (!none) packages.forEach(renderPackage);
+  }
+
+  loadFeed<TweebleMembershipPackage[]>(TWEEBLE.api.membership, render).catch((err) => {
+    loadingEl?.remove();
+    errorEl?.classList.remove('hidden');
+    console.error('Failed to load Tweeble membership packages', err);
+  });
 </script>

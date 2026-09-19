@@ -1,4 +1,5 @@
 ---
+import { TWEEBLE } from '../../lib/site';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
 import GoalGrid from '../../components/GoalGrid.astro';
@@ -8,7 +9,7 @@ import altarHero from '../../assets/photos/altar-durga-shiva-ganesh-diyas.jpg';
 const urlMap = await getGoalUrlMap();
 ---
 
-<BaseLayout title="Fundraising Goals" description="Special fundraising campaigns at Shri Shiv Dham Hindu Temple, live from the Temple Hub.">
+<BaseLayout feeds={[TWEEBLE.api.fundraising]} title="Fundraising Goals" description="Special fundraising campaigns at Shri Shiv Dham Hindu Temple, live from the Temple Hub.">
   <PageHero
     eyebrow="Give"
     title="Fundraising Goals"

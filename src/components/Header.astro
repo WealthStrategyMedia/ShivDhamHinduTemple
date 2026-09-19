@@ -1,6 +1,8 @@
 ---
 import { NAV, SITE, TWEEBLE } from '../lib/site';
 import SocialIcons from './SocialIcons.astro';
+import { Image } from 'astro:assets';
+import logo from '../assets/logo.png';
 import { getProgramPages } from '../lib/programs';
 
 const programPages = await getProgramPages();
@@ -39,7 +41,7 @@ const isActive = (href: string) => href !== '/' && path.startsWith(href);
 
   <div class="container-header flex items-center justify-between py-3">
     <a href="/" class="flex items-center">
-      <img src="/images/LOGO.png" alt={SITE.name} class="h-10 w-auto sm:h-12" />
+      <Image src={logo} alt={SITE.name} width={208} height={48} widths={[174, 208, 348, 416]} sizes="(min-width: 640px) 208px, 174px" format="webp" loading="eager" fetchpriority="high" class="h-10 w-auto sm:h-12" />
     </a>
 
     <nav class="hidden lg:flex lg:items-center lg:gap-1" aria-label="Primary">

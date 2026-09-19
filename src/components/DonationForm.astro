@@ -1,9 +1,10 @@
 ---
-// Donations are processed through the Temple Hub's donate API (Tweeble),
-// which creates a Stripe-hosted Checkout session on the temple's behalf —
-// the temple's Stripe account, not a separate provider bolted onto this
-// site. That API only supports one-time gifts, so there's no monthly
-// toggle here; recurring giving lives in the membership packages instead.
+// Donations go through the Temple Hub's donate API (Tweeble). The visitor
+// picks an amount here; the API starts a checkout on the temple's Stripe
+// account and returns a secure card form, which opens in an on-site dialog
+// (see lib/checkout.ts), so the visitor never leaves this page. That API
+// only supports one-time gifts, so there's no monthly toggle; recurring
+// giving lives in the membership packages instead.
 interface Props {
   fund?: string;
 }
@@ -40,11 +41,12 @@ const amounts = [21, 51, 108, 251, 501];
     Donate Securely
   </button>
   <p class="donate-status mt-3 text-center text-sm" role="status" aria-live="polite"></p>
-  <p class="mt-3 text-center text-xs text-ivory-500">Payments are processed securely by Stripe, via the temple's Temple Hub.</p>
+  <p class="mt-3 text-center text-xs text-ivory-500">Give right here, securely. Card details go straight to Stripe and never touch this website.</p>
 </div>
 
 <script>
   import { TWEEBLE } from '../lib/site';
+  import { openCheckout } from '../lib/checkout';
 
   document.querySelectorAll<HTMLElement>('[data-donation-form]').forEach((card) => {
     let selectedAmount: number | null = null;
@@ -79,7 +81,7 @@ const amounts = [21, 51, 108, 251, 501];
     submitBtn?.addEventListener('click', async () => {
       if (!selectedAmount || !status) return;
       submitBtn.disabled = true;
-      status.textContent = 'Redirecting to secure checkout…';
+      status.textContent = 'Opening secure checkout…';
       status.className = 'donate-status mt-3 text-center text-sm text-ivory-600';
 
       const affiliateRef = new URLSearchParams(window.location.search).get('ref') ?? undefined;
@@ -92,13 +94,21 @@ const amounts = [21, 51, 108, 251, 501];
             amountCents: Math.round(selectedAmount * 100),
             isAnonymous: anonymousCheckbox?.checked ?? false,
             ...(affiliateRef ? { affiliateRef } : {}),
-            successUrl: `${window.location.origin}/donation-confirmation/`,
-            cancelUrl: `${window.location.origin}/donation-failed/`,
           }),
         });
         const data = await res.json();
-        if (!res.ok || !data.url) throw new Error(data.error ?? 'Could not start checkout.');
-        window.location.href = data.url;
+        if (!res.ok || data.error || !data.embedUrl) throw new Error(data.error ?? 'Could not start checkout.');
+        status.textContent = '';
+        openCheckout({
+          type: 'donation',
+          title: `Donate $${selectedAmount}`,
+          embedUrl: data.embedUrl,
+          fallbackUrl: TWEEBLE.donateUrl,
+          onDone: () => {
+            window.location.href = '/donation-confirmation/';
+          },
+        });
+        submitBtn.disabled = false;
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Something went wrong.';
         status.innerHTML = '';

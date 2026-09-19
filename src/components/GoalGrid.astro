@@ -82,16 +82,19 @@ const { urlMap, excludeId, wrapperId } = Astro.props;
 
       <div class="mt-6 flex flex-col gap-3">
         <a class="goal-details btn-primary hidden w-full">Learn More</a>
-        <a class="goal-contribute btn-ghost w-full" target="_blank" rel="noopener">Contribute on the Temple Hub</a>
+        <button type="button" class="goal-contribute btn-ghost w-full" data-buy data-buy-type="fundraising">Donate to This Project</button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-  import { fetchTweebleFundraising, formatGoalAmount, truncate, type TweebleFundraisingGoal } from '../lib/tweeble-client';
+  import { loadFeed, formatGoalAmount, truncate, type TweebleFundraisingGoal } from '../lib/tweeble-client';
+  import { TWEEBLE } from '../lib/site';
   import { initShareButtons } from '../lib/share-widget';
+  import { initCheckoutButtons } from '../lib/checkout';
   initShareButtons();
+  initCheckoutButtons();
 
   const root = document.getElementById('goals-root')!;
   const loadingEl = document.getElementById('goals-loading');
@@ -106,7 +109,7 @@ const { urlMap, excludeId, wrapperId } = Astro.props;
   function renderGoal(goal: TweebleFundraisingGoal) {
     const node = template.content.cloneNode(true) as DocumentFragment;
 
-    const cover = goal.photoUrls?.[0];
+    const cover = goal.coverPhotoUrl ?? goal.photoUrls?.[0];
     const img = node.querySelector<HTMLImageElement>('.goal-cover')!;
     const fallback = node.querySelector<HTMLElement>('.goal-fallback')!;
     if (cover) {
@@ -117,21 +120,28 @@ const { urlMap, excludeId, wrapperId } = Astro.props;
     }
 
     node.querySelector('.goal-title')!.textContent = goal.title;
-    node.querySelector('.goal-desc')!.textContent = truncate(goal.description, 170);
+    node.querySelector('.goal-desc')!.textContent = truncate(goal.shortDescription || goal.description, 170);
 
     const target = node.querySelector<HTMLElement>('.goal-target')!;
     if (goal.targetCents > 0) target.textContent = `Goal ${formatGoalAmount(goal.targetCents)}`;
     else target.remove();
 
-    if (goal.targetCents > 0 && typeof goal.raisedCents === 'number') {
-      const pct = Math.min(100, Math.round((goal.raisedCents / goal.targetCents) * 100));
-      node.querySelector('.goal-raised')!.textContent = `${formatGoalAmount(goal.raisedCents)} raised`;
-      node.querySelector('.goal-percent')!.textContent = `${pct}% of goal`;
+    if (goal.targetCents > 0) {
+      const raised = goal.raisedCents ?? 0;
+      const pct = Math.min(100, Math.round((raised / goal.targetCents) * 100));
+      const donors = goal.donorCount ?? 0;
+      node.querySelector('.goal-raised')!.textContent = raised > 0 ? `${formatGoalAmount(raised)} raised` : 'Be the first to give';
+      node.querySelector('.goal-percent')!.textContent =
+        raised > 0 ? `${pct}% of goal${donors > 0 ? ` · ${donors} donor${donors === 1 ? '' : 's'}` : ''}` : '';
       node.querySelector<HTMLElement>('.goal-bar')!.style.width = `${pct}%`;
       node.querySelector('.goal-progress')!.classList.remove('hidden');
     }
 
-    node.querySelector<HTMLAnchorElement>('.goal-contribute')!.href = goal.url;
+    const donate = node.querySelector<HTMLButtonElement>('.goal-contribute')!;
+    donate.dataset.buyItem = goal.id;
+    donate.dataset.buyTitle = goal.title;
+    donate.dataset.buyFallback = goal.url;
+    if (goal.embedUrl) donate.dataset.buyEmbed = goal.embedUrl;
 
     const detailUrl = urlMap[goal.id];
     if (detailUrl) {
@@ -147,22 +157,22 @@ const { urlMap, excludeId, wrapperId } = Astro.props;
     gridEl.appendChild(node);
   }
 
-  (async () => {
-    try {
-      const all = await fetchTweebleFundraising();
-      const goals = Array.isArray(all) ? all.filter((g) => g.id !== excludeId) : [];
-      if (goals.length === 0) {
-        if (wrapper) wrapper.classList.add('hidden');
-        else emptyEl?.classList.remove('hidden');
-        return;
-      }
-      goals.forEach(renderGoal);
-    } catch (err) {
-      if (wrapper) wrapper.classList.add('hidden');
-      else errorEl?.classList.remove('hidden');
-      console.error('Failed to load Tweeble fundraising goals', err);
-    } finally {
-      loadingEl?.remove();
-    }
-  })();
+  // Redraws the whole grid, so it can run twice: once from the last copy of
+  // the feed (instant), then again only if the live feed differs.
+  function render(all: TweebleFundraisingGoal[]) {
+    const goals = Array.isArray(all) ? all.filter((g) => g.id !== excludeId) : [];
+    gridEl.replaceChildren();
+    loadingEl?.remove();
+    const none = goals.length === 0;
+    if (wrapper) wrapper.classList.toggle('hidden', none);
+    else emptyEl?.classList.toggle('hidden', !none);
+    goals.forEach(renderGoal);
+  }
+
+  loadFeed<TweebleFundraisingGoal[]>(TWEEBLE.api.fundraising, render).catch((err) => {
+    loadingEl?.remove();
+    if (wrapper) wrapper.classList.add('hidden');
+    else errorEl?.classList.remove('hidden');
+    console.error('Failed to load Tweeble fundraising goals', err);
+  });
 </script>

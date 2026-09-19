@@ -8,7 +8,7 @@ const page = await getEntry('pages', 'online-donations');
 const { Content } = page ? await render(page) : { Content: null };
 ---
 
-<BaseLayout title="Online Donations" description={page?.data.summary}>
+<BaseLayout tweeble title="Online Donations" description={page?.data.summary}>
   <PageHero eyebrow="Give" title="Online Donations" description={page?.data.summary} image={page?.data.hero} imageAlt={page?.data.heroAlt} compact />
 
   <div class="container-page grid gap-12 py-14 lg:grid-cols-[3fr_2fr]">

@@ -1,5 +1,14 @@
 ---
 import '../styles/global.css';
+// Self-hosted fonts: no render-blocking request to Google, no third-party
+// connections, and long-lived caching from this site's own CDN. Each family's
+// CSS only fetches the character subsets a page actually uses.
+import '@fontsource-variable/inter/wght.css';
+import '@fontsource/fraunces/500.css';
+import '@fontsource/fraunces/600.css';
+import '@fontsource/fraunces/700.css';
+import interLatin from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
+import frauncesLatin600 from '@fontsource/fraunces/files/fraunces-latin-600-normal.woff2?url';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import WhatsAppWidget from '../components/WhatsAppWidget.astro';
@@ -10,9 +19,20 @@ interface Props {
   description?: string;
   image?: string;
   noindex?: boolean;
+  /**
+   * Tweeble API URLs this page will read. Their requests start here in <head>,
+   * while the page is still parsing, instead of after its scripts have run.
+   */
+  feeds?: string[];
+  /** Warm up the connection to Tweeble even if no feed is read (pages with checkout or forms). */
+  tweeble?: boolean;
 }
 
-const { title, description = SITE.tagline, image, noindex = false } = Astro.props;
+const { title, description = SITE.tagline, image, noindex = false, feeds = [], tweeble = false } = Astro.props;
+const usesTweeble = tweeble || feeds.length > 0;
+const earlyFetch = feeds
+  .map((url) => `t[${JSON.stringify(url)}]=fetch(${JSON.stringify(url)}).then(function(r){if(!r.ok)throw 0;return r.json()});t[${JSON.stringify(url)}].catch(function(){});`)
+  .join('');
 const pageTitle = title === SITE.name ? title : `${title} | ${SITE.name}`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 ---
@@ -36,12 +56,18 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     {image && <meta property="og:image" content={new URL(image, Astro.site)} />}
     <meta name="twitter:card" content="summary_large_image" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Tiro+Devanagari+Hindi&display=swap"
-      rel="stylesheet"
-    />
+    {usesTweeble && (
+      <>
+        <!-- Open the connections to Tweeble (API + cover photos) before they're needed. -->
+        <link rel="preconnect" href="https://www.tweeble.com" crossorigin />
+        <link rel="preconnect" href="https://tweeble-storage-production-2xupxm.t3.storageapi.dev" crossorigin />
+      </>
+    )}
+    {feeds.length > 0 && <script is:inline set:html={`(function(){var t=window.__tw=window.__tw||{};${earlyFetch}})();`} />}
+
+    <!-- The two fonts every page paints with, fetched in parallel with the CSS. -->
+    <link rel="preload" href={interLatin} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={frauncesLatin600} as="font" type="font/woff2" crossorigin />
 
     <script type="application/ld+json" set:html={JSON.stringify({
       '@context': 'https://schema.org',
@@ -70,5 +96,8 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     </main>
     <Footer />
     <WhatsAppWidget />
+    <script>
+      import '../lib/youtube-facade';
+    </script>
   </body>
 </html>

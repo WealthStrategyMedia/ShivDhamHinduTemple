@@ -31,7 +31,7 @@ const focusClass = {
 -->
 {image ? (
   <div class:list={[compact ? 'hero-photo-compact' : 'hero-photo', 'flex items-end']}>
-    <Image src={image} alt={imageAlt} width={1920} height={compact ? 640 : 900} class:list={['', focusClass]} />
+    <Image src={image} alt={imageAlt} width={1920} height={compact ? 640 : 900} widths={[640, 960, 1280, 1920]} sizes="100vw" loading="eager" fetchpriority="high" class:list={['', focusClass]} />
     <div class="hero-content container-page w-full py-12 sm:py-16 lg:py-20">
       {eyebrow && <p class="eyebrow text-marigold-300">{eyebrow}</p>}
       <h1 class="mt-2 text-white">{title}</h1>

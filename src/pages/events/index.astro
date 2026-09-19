@@ -1,4 +1,5 @@
 ---
+import { TWEEBLE } from '../../lib/site';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
 import Mandala from '../../components/Mandala.astro';
@@ -6,7 +7,7 @@ import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
 import guruJiHoliHero from '../../assets/photos/guruji-holi.jpg';
 ---
 
-<BaseLayout title="Events" description="Every upcoming event at Shri Shiv Dham Hindu Temple, live from the Temple Hub.">
+<BaseLayout feeds={[TWEEBLE.api.events]} title="Events" description="Every upcoming event at Shri Shiv Dham Hindu Temple, live from the Temple Hub.">
   <PageHero
     eyebrow="Calendar"
     title="Upcoming Events"
@@ -111,35 +112,38 @@ import guruJiHoliHero from '../../assets/photos/guruji-holi.jpg';
 </BaseLayout>
 
 <template id="event-card-template">
-  <a class="card-photo group" target="_blank" rel="noopener">
+  <div class="card-photo group flex flex-col">
     <div class="event-cover-wrap relative h-56 overflow-hidden bg-gradient-to-br from-maroon-600 to-maroon-800">
       <img class="event-cover hidden h-56 w-full object-cover" loading="lazy" alt="" />
       <span class="event-fallback flex h-56 items-center justify-center font-display text-3xl text-marigold-200">ॐ</span>
       <span class="event-price absolute right-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-maroon-700"></span>
       <span class="event-past absolute left-3 top-3 hidden rounded-full bg-ivory-900/80 px-3 py-1 text-xs font-semibold text-white">Past Event</span>
     </div>
-    <div class="p-6">
+    <div class="flex flex-1 flex-col p-6">
       <p class="event-date eyebrow"></p>
-      <h3 class="event-title mt-1.5 font-display text-xl font-semibold text-maroon-700 group-hover:text-marigold-600"></h3>
+      <h3 class="mt-1.5 font-display text-xl font-semibold text-maroon-700">
+        <a class="event-title hover:text-marigold-600" target="_blank" rel="noopener"></a>
+      </h3>
       <p class="event-venue mt-1 text-sm font-medium text-marigold-600"></p>
-      <p class="event-desc mt-2 text-sm text-ivory-600 line-clamp-2"></p>
-      <div class="mt-3 flex items-center justify-between">
-        <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-maroon-700">
-          <span class="event-cta-label">Register on the Temple Hub</span>
-          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" /></svg>
-        </span>
+      <p class="event-desc mt-2 flex-1 text-sm text-ivory-600 line-clamp-2"></p>
+      <div class="mt-5 flex items-center gap-3">
+        <button type="button" class="event-buy btn-primary flex-1 whitespace-nowrap" data-buy data-buy-type="ticket"></button>
+        <a class="event-recap btn-ghost hidden flex-1 whitespace-nowrap" target="_blank" rel="noopener">View Recap</a>
         <button type="button" class="share-trigger flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ivory-400 hover:bg-ivory-100 hover:text-maroon-700" aria-label="Share this event">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 10.6 15.4 6.9M8.6 13.4l6.8 3.7" /></svg>
         </button>
       </div>
     </div>
-  </a>
+  </div>
 </template>
 
 <script>
-  import { fetchTweebleEvents, formatCents, formatEventDate, truncate, isEventPast, type TweebleEvent } from '../../lib/tweeble-client';
+  import { loadFeed, formatCents, formatEventDate, truncate, isEventPast, type TweebleEvent } from '../../lib/tweeble-client';
+  import { TWEEBLE } from '../../lib/site';
   import { initShareButtons } from '../../lib/share-widget';
+  import { initCheckoutButtons } from '../../lib/checkout';
   initShareButtons();
+  initCheckoutButtons();
 
   const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -164,8 +168,8 @@ import guruJiHoliHero from '../../assets/photos/guruji-holi.jpg';
   function buildCard(event: TweebleEvent, isPast: boolean): DocumentFragment | null {
     if (!cardTemplate) return null;
     const node = cardTemplate.content.cloneNode(true) as DocumentFragment;
-    const link = node.querySelector('a')!;
-    link.href = event.url;
+    const titleLink = node.querySelector<HTMLAnchorElement>('.event-title')!;
+    titleLink.href = event.url;
 
     const shareBtn = node.querySelector<HTMLElement>('.share-trigger')!;
     shareBtn.dataset.shareUrl = event.url;
@@ -180,17 +184,29 @@ import guruJiHoliHero from '../../assets/photos/guruji-holi.jpg';
       fallback.classList.add('hidden');
     }
 
+    const buy = node.querySelector<HTMLButtonElement>('.event-buy')!;
+    const recap = node.querySelector<HTMLAnchorElement>('.event-recap')!;
     if (isPast) {
       node.querySelector('.event-past')!.classList.remove('hidden');
       node.querySelector('.event-cover-wrap')!.classList.add('grayscale');
-      node.querySelector('.event-cta-label')!.textContent = 'View Recap on the Temple Hub';
-      (link as HTMLElement).classList.add('opacity-80');
+      buy.remove();
+      recap.href = event.url;
+      recap.classList.remove('hidden');
+    } else {
+      buy.textContent = event.ticketPriceCents === 0 ? 'Register Free' : 'Get Tickets';
+      buy.dataset.buyItem = event.id;
+      buy.dataset.buyTitle = event.title;
+      buy.dataset.buyFallback = event.url;
+      if (event.embedUrl) buy.dataset.buyEmbed = event.embedUrl;
+      recap.remove();
     }
 
     node.querySelector('.event-price')!.textContent = formatCents(event.ticketPriceCents);
     node.querySelector('.event-date')!.textContent = formatEventDate(event.eventDate);
-    node.querySelector('.event-title')!.textContent = event.title;
-    node.querySelector('.event-venue')!.textContent = event.venueName ?? '';
+    titleLink.textContent = event.title;
+    const venue = node.querySelector<HTMLElement>('.event-venue')!;
+    if (event.locationLabel) venue.textContent = event.locationLabel;
+    else venue.remove();
     node.querySelector('.event-desc')!.textContent = truncate(event.description, 140);
     return node;
   }
@@ -201,32 +217,57 @@ import guruJiHoliHero from '../../assets/photos/guruji-holi.jpg';
     const upcoming = events.filter((e) => !isEventPast(e, now)).sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime());
     const past = events.filter((e) => isEventPast(e, now)).sort((a, b) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime());
 
-    if (upcoming.length === 0) {
-      emptyUpcomingEl?.classList.remove('hidden');
-    } else {
+    gridEl.replaceChildren();
+    pastGridEl.replaceChildren();
+    emptyUpcomingEl?.classList.toggle('hidden', upcoming.length > 0);
+
+    if (upcoming.length > 0) {
       for (const event of upcoming) {
         const node = buildCard(event, false);
         if (node) gridEl.appendChild(node);
       }
     }
 
-    if (past.length > 0) {
-      for (const event of past) {
-        const node = buildCard(event, true);
-        if (node) pastGridEl.appendChild(node);
-      }
-      pastToggleWrapEl?.classList.remove('hidden');
-      if (pastToggleLabel) pastToggleLabel.textContent = `Show Past Events (${past.length})`;
-
-      let expanded = false;
-      pastToggleBtn?.addEventListener('click', () => {
-        expanded = !expanded;
-        pastSectionEl?.classList.toggle('hidden', !expanded);
-        pastChevron?.classList.toggle('rotate-180', expanded);
-        if (pastToggleLabel) pastToggleLabel.textContent = expanded ? 'Hide Past Events' : `Show Past Events (${past.length})`;
-      });
+    pastCount = past.length;
+    for (const event of past) {
+      const node = buildCard(event, true);
+      if (node) pastGridEl.appendChild(node);
     }
+    pastToggleWrapEl?.classList.toggle('hidden', past.length === 0);
+    updatePastToggle();
   }
+
+  // The past-events toggle and the calendar's month arrows are wired once, and
+  // keep their state when the list is redrawn from newer data.
+  let pastCount = 0;
+  let pastExpanded = false;
+  function updatePastToggle() {
+    pastSectionEl?.classList.toggle('hidden', !(pastExpanded && pastCount > 0));
+    pastChevron?.classList.toggle('rotate-180', pastExpanded);
+    if (pastToggleLabel) pastToggleLabel.textContent = pastExpanded ? 'Hide Past Events' : `Show Past Events (${pastCount})`;
+  }
+  pastToggleBtn?.addEventListener('click', () => {
+    pastExpanded = !pastExpanded;
+    updatePastToggle();
+  });
+
+  let calMonths: { year: number; month: number }[] = [];
+  let calCurrent = 0;
+  const calContainer = document.getElementById('calendar-months');
+  const calLabel = document.getElementById('cal-label');
+  const calPrev = document.getElementById('cal-prev') as HTMLButtonElement | null;
+  const calNext = document.getElementById('cal-next') as HTMLButtonElement | null;
+  function renderMonth() {
+    calContainer?.querySelectorAll<HTMLElement>('[data-month-index]').forEach((panel) => {
+      panel.classList.toggle('hidden', Number(panel.dataset.monthIndex) !== calCurrent);
+    });
+    const m = calMonths[calCurrent];
+    if (calLabel && m) calLabel.textContent = `${MONTH_NAMES[m.month]} ${m.year}`;
+    if (calPrev) calPrev.disabled = calCurrent === 0;
+    if (calNext) calNext.disabled = calCurrent >= calMonths.length - 1;
+  }
+  calPrev?.addEventListener('click', () => { if (calCurrent > 0) { calCurrent--; renderMonth(); } });
+  calNext?.addEventListener('click', () => { if (calCurrent < calMonths.length - 1) { calCurrent++; renderMonth(); } });
 
   function buildCalendar(events: TweebleEvent[]) {
     // A multi-day event (e.g. a mela running the 14th through the 20th)
@@ -326,22 +367,8 @@ import guruJiHoliHero from '../../assets/photos/guruji-holi.jpg';
       container.appendChild(panel);
     });
 
-    let current = 0;
-    const label = document.getElementById('cal-label');
-    const prevBtn = document.getElementById('cal-prev');
-    const nextBtn = document.getElementById('cal-next');
-
-    function renderMonth() {
-      container?.querySelectorAll<HTMLElement>('[data-month-index]').forEach((panel) => {
-        panel.classList.toggle('hidden', Number(panel.dataset.monthIndex) !== current);
-      });
-      if (label) label.textContent = `${MONTH_NAMES[months[current].month]} ${months[current].year}`;
-      if (prevBtn) (prevBtn as HTMLButtonElement).disabled = current === 0;
-      if (nextBtn) (nextBtn as HTMLButtonElement).disabled = current === months.length - 1;
-    }
-
-    prevBtn?.addEventListener('click', () => { if (current > 0) { current--; renderMonth(); } });
-    nextBtn?.addEventListener('click', () => { if (current < months.length - 1) { current++; renderMonth(); } });
+    calMonths = months;
+    if (calCurrent >= months.length) calCurrent = 0;
     renderMonth();
   }
 
@@ -353,29 +380,36 @@ import guruJiHoliHero from '../../assets/photos/guruji-holi.jpg';
   }
 
   document.querySelectorAll('[data-view-btn]').forEach((btn) => {
-    btn.addEventListener('click', () => setView(btn.getAttribute('data-view-btn')!));
+    btn.addEventListener('click', () => {
+      viewChosen = true;
+      setView(btn.getAttribute('data-view-btn')!);
+    });
   });
 
-  (async () => {
-    try {
-      const events = await fetchTweebleEvents();
-      if (events.length === 0) {
-        emptyEl?.classList.remove('hidden');
-        return;
-      }
-      buildCalendar(events);
-      renderList(events);
+  let viewChosen = false;
 
+  function render(events: TweebleEvent[]) {
+    loadingEl?.remove();
+    const none = !Array.isArray(events) || events.length === 0;
+    emptyEl?.classList.toggle('hidden', !none);
+    if (none) return;
+    buildCalendar(events);
+    renderList(events);
+
+    // Pick the starting view once; a later redraw must not undo a click.
+    if (!viewChosen) {
+      viewChosen = true;
       let initial = 'calendar';
       try { initial = localStorage.getItem('events-view') || 'calendar'; } catch {}
       setView(initial);
-    } catch (err) {
-      errorEl?.classList.remove('hidden');
-      console.error('Failed to load Tweeble events', err);
-    } finally {
-      loadingEl?.remove();
     }
-  })();
+  }
+
+  loadFeed<TweebleEvent[]>(TWEEBLE.api.events, render).catch((err) => {
+    loadingEl?.remove();
+    errorEl?.classList.remove('hidden');
+    console.error('Failed to load Tweeble events', err);
+  });
 </script>
 
 <style>

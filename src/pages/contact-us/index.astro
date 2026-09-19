@@ -10,7 +10,7 @@ const { Content } = page ? await render(page) : { Content: null };
 const mapSrc = `https://maps.google.com/maps?q=${encodeURIComponent(SITE.address.full)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
 ---
 
-<BaseLayout title="Contact Us" description={page?.data.summary}>
+<BaseLayout feeds={[TWEEBLE.contactForms.contactUs]} title="Contact Us" description={page?.data.summary}>
   <PageHero eyebrow={SITE.shortName} title="Contact Us" description={page?.data.summary} image={page?.data.hero} imageAlt={page?.data.heroAlt} compact />
 
   <div class="container-page py-16 sm:py-20">
