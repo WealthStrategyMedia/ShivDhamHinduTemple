@@ -21,7 +21,7 @@ export default async (req: Request, _context: Context) => {
   }
 
   const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
-  const SITE_URL = process.env.URL ?? 'https://shivdhamhindutemple.org';
+  const SITE_URL = process.env.URL ?? 'https://shivatempleorlando.org';
 
   if (!STRIPE_SECRET_KEY) {
     console.error('STRIPE_SECRET_KEY is not set — Stripe checkout is not configured yet.');

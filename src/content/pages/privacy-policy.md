@@ -5,7 +5,7 @@ order: 1
 section: legal
 ---
 
-This policy covers the information collected through shivdhamhindutemple.org, the official website of Shri Shiv Dham Hindu Temple.
+This policy covers the information collected through shivatempleorlando.org, the official website of Shri Shiv Dham Hindu Temple.
 
 ## Information We Collect
 

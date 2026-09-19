@@ -7,7 +7,7 @@ export const SITE = {
   name: 'Shri Shiv Dham Hindu Temple',
   shortName: 'Shiv Dham',
   tagline: 'A home for devotion, culture, and community in Central Florida',
-  url: 'https://shivdhamhindutemple.org',
+  url: 'https://shivatempleorlando.org',
 
   email: 'info@shivatempleorlando.org',
   phone: '+1 407-779-5128',

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://shivdhamhindutemple.org/sitemap-index.xml
+Sitemap: https://shivatempleorlando.org/sitemap-index.xml
