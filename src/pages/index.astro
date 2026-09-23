@@ -14,7 +14,7 @@ const deities = (await getCollection('deities')).sort((a, b) => a.data.order - b
 const programUrlMap = await getProgramUrlMap();
 ---
 
-<BaseLayout feeds={[TWEEBLE.api.events, TWEEBLE.api.programs, TWEEBLE.api.reviews, TWEEBLE.api.products]} title={SITE.name} description={SITE.tagline}>
+<BaseLayout feeds={[TWEEBLE.api.events, TWEEBLE.api.programs, TWEEBLE.api.reviews, TWEEBLE.api.products, TWEEBLE.api.blog]} title={SITE.name} description={SITE.tagline}>
   <!-- Hero -->
   <section class="hero-photo flex min-h-[34rem] items-end sm:min-h-[40rem]">
     <Image src={heroImage} alt="The temple altar, decorated for worship" width={1920} height={1100} widths={[640, 960, 1280, 1920]} sizes="100vw" loading="eager" fetchpriority="high" class="object-center" />
@@ -110,26 +110,35 @@ const programUrlMap = await getProgramUrlMap();
   <section class="container-page py-20 sm:py-24">
     <div class="grid gap-10 lg:grid-cols-2 lg:items-center">
       <div>
-        <p class="eyebrow">One Link, Everything Temple</p>
+        <p class="eyebrow">Your One Link to Everything Temple</p>
         <h2 class="mt-2">The Temple Hub</h2>
         <p class="mt-4 text-ivory-600">
-          Events, services and products, membership, and the temple's latest news all live in one place on the Temple Hub. And every temple-goer can earn real money just by sharing it.
+          Every event, every service, every product, every class, every membership, every fundraising goal — and the temple's latest news — all live in exactly one place. If it's happening at Shri Shiv Dham, it's on the Temple Hub.
         </p>
         <ul class="mt-6 space-y-3 text-sm text-ivory-700">
           <li class="flex items-start gap-2.5">
             <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-marigold-400"></span>
-            Register for events and book temple services and products
+            Register for events, book temple services, and shop the store
           </li>
           <li class="flex items-start gap-2.5">
             <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-marigold-400"></span>
-            Sign up for temple membership and read the latest news
+            Join a class, sign up for membership, or support a fundraising goal
           </li>
           <li class="flex items-start gap-2.5">
             <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-marigold-400"></span>
-            Share events, services, or a membership invite and earn real money — keep it, or donate it back
+            Catch up on the temple's latest news and community stories
           </li>
         </ul>
-        <div class="mt-8 flex flex-wrap gap-3">
+
+        <div class="mt-8 rounded-2xl border border-marigold-200 bg-marigold-50 p-6">
+          <p class="font-display text-lg font-semibold text-maroon-700">Share What You Love. Earn While You Do It.</p>
+          <p class="mt-2 text-sm leading-relaxed text-ivory-700">
+            Create a free Tweeble account on the Temple Hub and you'll get your own personal affiliate link for absolutely anything the temple offers — every event, service, product, class, membership, and fundraising goal. Share your link with friends, family, and your community, and every single time something sells, <strong class="text-maroon-700">you earn money</strong>. Keep it for yourself, or donate it straight back to the temple — the choice is always yours. It's the easiest way to support Shri Shiv Dham's mission while it supports you right back.
+          </p>
+          <a href={TWEEBLE.hubUrl} target="_blank" rel="noopener" class="btn-primary mt-5">Get My Free Affiliate Link</a>
+        </div>
+
+        <div class="mt-6 flex flex-wrap gap-3">
           <a href={TWEEBLE.hubUrl} target="_blank" rel="noopener" class="btn-primary">Open the Temple Hub</a>
           <a href="/temple-hub/" class="btn-ghost">Learn More</a>
         </div>
@@ -201,6 +210,20 @@ const programUrlMap = await getProgramUrlMap();
       ))}
     </div>
     <div id="home-programs-grid" class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"></div>
+  </section>
+
+  <!-- Blog / News — live from the Temple Hub; hides itself until a post exists -->
+  <section id="home-blog" class="hidden bg-ivory-100 py-20 sm:py-24">
+    <div class="container-page">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p class="eyebrow">News</p>
+          <h2 class="mt-2">From the Blog</h2>
+        </div>
+        <a href="/blog/" class="btn-ghost">Read All Posts</a>
+      </div>
+      <div id="home-blog-grid" class="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3"></div>
+    </div>
   </section>
 
   <!-- Temple Store — live from the Temple Hub; hides itself until the temple lists an item -->
@@ -409,6 +432,70 @@ const programUrlMap = await getProgramUrlMap();
     loadingEl?.remove();
     section?.classList.add('hidden');
     console.error('Failed to load Tweeble programs', err);
+  });
+</script>
+
+<template id="home-blog-card-template">
+  <a class="card-photo group flex flex-col" target="_blank" rel="noopener">
+    <div class="relative h-48 overflow-hidden bg-gradient-to-br from-maroon-600 to-maroon-800">
+      <img class="post-cover hidden h-48 w-full object-cover" loading="lazy" alt="" />
+      <span class="post-fallback flex h-48 items-center justify-center font-display text-3xl text-marigold-200">ॐ</span>
+    </div>
+    <div class="flex flex-1 flex-col p-6">
+      <p class="post-meta eyebrow"></p>
+      <h3 class="post-title mt-1.5 font-display text-lg font-semibold text-maroon-700 group-hover:text-marigold-600"></h3>
+      <p class="post-subtitle mt-2 flex-1 text-sm text-ivory-600 line-clamp-2"></p>
+      <span class="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-maroon-700">
+        Read on the Temple Hub
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" /></svg>
+      </span>
+    </div>
+  </a>
+</template>
+
+<script>
+  import { loadFeed, truncate, type TweebleBlogPost } from '../lib/tweeble-client';
+  import { TWEEBLE as TWB } from '../lib/site';
+
+  const section = document.getElementById('home-blog');
+  const gridEl = document.getElementById('home-blog-grid');
+  const template = document.getElementById('home-blog-card-template') as HTMLTemplateElement | null;
+
+  // Redraws the whole strip, so it can run from the cached copy and again from the live feed.
+  function render(posts: TweebleBlogPost[]) {
+    if (!gridEl || !template) return;
+    gridEl.replaceChildren();
+    const none = !Array.isArray(posts) || posts.length === 0;
+    section?.classList.toggle('hidden', none);
+    if (none) return;
+
+    const sorted = [...posts].sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()).slice(0, 3);
+    for (const post of sorted) {
+      const node = template.content.cloneNode(true) as DocumentFragment;
+      const link = node.querySelector('a')!;
+      link.href = post.url;
+
+      const img = node.querySelector<HTMLImageElement>('.post-cover')!;
+      const fallback = node.querySelector<HTMLElement>('.post-fallback')!;
+      if (post.coverImageUrl) {
+        img.src = post.coverImageUrl;
+        img.alt = post.title;
+        img.classList.remove('hidden');
+        fallback.classList.add('hidden');
+      }
+
+      const published = new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      node.querySelector('.post-meta')!.textContent = post.authorName ? `${published} · ${post.authorName}` : published;
+      node.querySelector('.post-title')!.textContent = post.title;
+      node.querySelector('.post-subtitle')!.textContent = post.subtitle ? truncate(post.subtitle, 130) : truncate(post.body, 130);
+
+      gridEl.appendChild(node);
+    }
+  }
+
+  loadFeed<TweebleBlogPost[]>(TWB.api.blog, render).catch((err) => {
+    section?.classList.add('hidden');
+    console.error('Failed to load Tweeble blog posts', err);
   });
 </script>
 
