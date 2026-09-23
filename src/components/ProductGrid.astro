@@ -1,0 +1,136 @@
+---
+// Live grid of the temple's products, rendered in the browser from the
+// Tweeble Products feed so cover photos (short-lived signed URLs) and prices
+// are always current. Every card buys on-site (see lib/checkout.ts); its
+// footer offers "Complete this on the Temple Hub" if the on-site form can't
+// load. Product field names aren't confirmed against real data yet (the feed
+// is empty until the temple adds items), so rendering goes through `pick()`
+// rather than a strict type, matching the rest of this site's unconfirmed feeds.
+import Mandala from './Mandala.astro';
+
+interface Props {
+  /** id of a wrapping element to hide when there is nothing to show. */
+  wrapperId?: string;
+}
+const { wrapperId } = Astro.props;
+---
+
+<div id="products-root" data-wrapper-id={wrapperId ?? ''}>
+  <div id="products-loading" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4" aria-live="polite">
+    {[0, 1, 2, 3].map(() => (
+      <div class="card-photo animate-pulse">
+        <div class="h-56 bg-ivory-200"></div>
+        <div class="space-y-3 p-6">
+          <div class="h-5 w-2/3 rounded bg-ivory-200"></div>
+          <div class="h-3 w-full rounded bg-ivory-200"></div>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <div id="products-error" class="hidden rounded-2xl border border-marigold-200 bg-marigold-50 p-8 text-center">
+    <p class="text-ivory-700">We couldn't load the store just now. Please try refreshing shortly, or <a href="/contact-us/" class="font-semibold text-maroon-700 underline">contact the temple office</a>.</p>
+  </div>
+
+  <div id="products-empty" class="hidden">
+    <div class="hero-pattern relative overflow-hidden rounded-2xl">
+      <Mandala class="mandala-decor" opacity={0.18} />
+      <div class="relative z-10 flex flex-col items-center gap-4 px-6 py-16 text-center sm:py-20">
+        <h2 class="max-w-lg text-white">Nothing for Sale Right Now</h2>
+        <p class="max-w-lg text-ivory-100">The store is empty at the moment. As soon as an item is added on the Temple Hub, it will appear here automatically — for festival food and pickup times in the meantime, see the <a href="/canteen/" class="font-semibold text-marigold-200 underline">Canteen</a> page.</p>
+        <a href="/contact-us/" class="btn-primary mt-2">Contact the Temple Office</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="products-grid" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4"></div>
+</div>
+
+<template id="product-card-template">
+  <div class="card-photo group flex flex-col">
+    <div class="relative h-56 overflow-hidden bg-gradient-to-br from-maroon-600 to-maroon-800">
+      <img class="product-cover hidden h-56 w-full object-cover" loading="lazy" alt="" />
+      <span class="product-fallback flex h-56 items-center justify-center font-display text-4xl text-marigold-200">ॐ</span>
+      <span class="product-price absolute right-3 top-3 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-maroon-700 shadow-sm"></span>
+    </div>
+    <div class="flex flex-1 flex-col p-6">
+      <div class="flex items-start justify-between gap-3">
+        <h3 class="product-name font-display text-base font-semibold text-maroon-700"></h3>
+        <button type="button" class="share-trigger flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ivory-400 hover:bg-ivory-100 hover:text-maroon-700" aria-label="Share this product">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 10.6 15.4 6.9M8.6 13.4l6.8 3.7" /></svg>
+        </button>
+      </div>
+      <p class="product-desc mt-2 flex-1 text-sm leading-relaxed text-ivory-600"></p>
+      <button type="button" class="product-buy btn-primary mt-4 w-full" data-buy data-buy-type="product">Buy Now</button>
+    </div>
+  </div>
+</template>
+
+<script>
+  import { loadFeed, pick, formatCents, truncate, type TweebleProduct } from '../lib/tweeble-client';
+  import { TWEEBLE } from '../lib/site';
+  import { initShareButtons } from '../lib/share-widget';
+  import { initCheckoutButtons } from '../lib/checkout';
+  initShareButtons();
+  initCheckoutButtons();
+
+  const root = document.getElementById('products-root')!;
+  const loadingEl = document.getElementById('products-loading');
+  const errorEl = document.getElementById('products-error');
+  const emptyEl = document.getElementById('products-empty');
+  const gridEl = document.getElementById('products-grid')!;
+  const template = document.getElementById('product-card-template') as HTMLTemplateElement;
+  const wrapper = root.dataset.wrapperId ? document.getElementById(root.dataset.wrapperId) : null;
+
+  function renderProduct(product: TweebleProduct) {
+    const node = template.content.cloneNode(true) as DocumentFragment;
+
+    const name = pick<string>(product, ['name', 'title']) ?? 'Temple Product';
+    const description = pick<string>(product, ['description', 'summary']) ?? '';
+    const coverUrl = pick<string>(product, ['coverPhotoUrl', 'coverImageUrl', 'imageUrl']);
+    const priceCents = pick<number>(product, ['priceCents', 'price']) ?? 0;
+    const url = pick<string>(product, ['url', 'link']) ?? 'https://www.tweeble.com';
+    const embedUrl = pick<string>(product, ['embedUrl']);
+
+    const img = node.querySelector<HTMLImageElement>('.product-cover')!;
+    const fallback = node.querySelector<HTMLElement>('.product-fallback')!;
+    if (coverUrl) {
+      img.src = coverUrl;
+      img.alt = name;
+      img.classList.remove('hidden');
+      fallback.classList.add('hidden');
+    }
+
+    node.querySelector('.product-name')!.textContent = name;
+    node.querySelector('.product-price')!.textContent = formatCents(priceCents);
+    node.querySelector('.product-desc')!.textContent = truncate(description, 110);
+
+    const buy = node.querySelector<HTMLButtonElement>('.product-buy')!;
+    buy.dataset.buyItem = product.id;
+    buy.dataset.buyTitle = name;
+    buy.dataset.buyFallback = url;
+    if (embedUrl) buy.dataset.buyEmbed = embedUrl;
+
+    const shareBtn = node.querySelector<HTMLElement>('.share-trigger')!;
+    shareBtn.dataset.shareUrl = url;
+    shareBtn.dataset.shareTitle = name;
+
+    gridEl.appendChild(node);
+  }
+
+  function render(products: TweebleProduct[]) {
+    loadingEl?.remove();
+    gridEl.replaceChildren();
+    const none = !Array.isArray(products) || products.length === 0;
+    if (wrapper) wrapper.classList.toggle('hidden', none);
+    else emptyEl?.classList.toggle('hidden', !none);
+    if (!none) products.forEach(renderProduct);
+  }
+
+  loadFeed<TweebleProduct[]>(TWEEBLE.api.products, render).catch((err) => {
+    loadingEl?.remove();
+    if (wrapper) wrapper.classList.add('hidden');
+    else errorEl?.classList.remove('hidden');
+    console.error('Failed to load Tweeble products', err);
+  });
+</script>

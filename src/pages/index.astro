@@ -12,10 +12,9 @@ import communityImage from '../assets/photos/community-group.jpg';
 
 const deities = (await getCollection('deities')).sort((a, b) => a.data.order - b.data.order);
 const programUrlMap = await getProgramUrlMap();
-const storeItems = (await getCollection('store')).sort((a, b) => a.data.order - b.data.order).slice(0, 4);
 ---
 
-<BaseLayout feeds={[TWEEBLE.api.events, TWEEBLE.api.programs, TWEEBLE.api.reviews]} title={SITE.name} description={SITE.tagline}>
+<BaseLayout feeds={[TWEEBLE.api.events, TWEEBLE.api.programs, TWEEBLE.api.reviews, TWEEBLE.api.products]} title={SITE.name} description={SITE.tagline}>
   <!-- Hero -->
   <section class="hero-photo flex min-h-[34rem] items-end sm:min-h-[40rem]">
     <Image src={heroImage} alt="The temple altar, decorated for worship" width={1920} height={1100} widths={[640, 960, 1280, 1920]} sizes="100vw" loading="eager" fetchpriority="high" class="object-center" />
@@ -204,34 +203,18 @@ const storeItems = (await getCollection('store')).sort((a, b) => a.data.order - 
     <div id="home-programs-grid" class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"></div>
   </section>
 
-  <!-- Temple Store -->
-  <section class="bg-white py-20 sm:py-24">
+  <!-- Temple Store — live from the Temple Hub; hides itself until the temple lists an item -->
+  <section id="home-store" class="hidden bg-white py-20 sm:py-24">
     <div class="container-page">
       <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p class="eyebrow">Shop</p>
           <h2 class="mt-2">Temple Store</h2>
-          <p class="mt-4 max-w-xl text-ivory-600">Order festival thalis for pickup, reserve a Shravan Mela vendor booth, and pick up Holi color — every purchase supports the temple's kitchen, festivals, and community programs.</p>
+          <p class="mt-4 max-w-xl text-ivory-600">Order directly from the temple — every purchase supports the kitchen, festivals, and community programs.</p>
         </div>
         <a href="/temple-store/" class="btn-ghost">Visit the Store</a>
       </div>
-      <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {storeItems.map((item) => (
-          <a href="/temple-store/" class="card-photo group">
-            {item.data.image ? (
-              <Image src={item.data.image} alt={item.data.title} width={480} height={320} class="h-52" />
-            ) : (
-              <div class="flex h-52 items-center justify-center bg-gradient-to-br from-maroon-600 to-maroon-800">
-                <span class="font-display text-3xl text-marigold-200">ॐ</span>
-              </div>
-            )}
-            <div class="p-6">
-              <h3 class="font-display text-base font-semibold text-maroon-700 group-hover:text-marigold-600">{item.data.title}</h3>
-              <p class="mt-2 font-display text-lg font-semibold text-maroon-700">${item.data.price.toFixed(2)}</p>
-            </div>
-          </a>
-        ))}
-      </div>
+      <div id="home-store-grid" class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4"></div>
     </div>
   </section>
 
@@ -276,7 +259,7 @@ const storeItems = (await getCollection('store')).sort((a, b) => a.data.order - 
 </template>
 
 <script>
-  import { loadFeed, formatEventDate, truncate, isEventPast, type TweebleEvent } from '../lib/tweeble-client';
+  import { loadFeed, formatEventWhen, truncate, isEventPast, type TweebleEvent } from '../lib/tweeble-client';
   import { TWEEBLE } from '../lib/site';
 
   {
@@ -313,7 +296,7 @@ const storeItems = (await getCollection('store')).sort((a, b) => a.data.order - 
           fallback.classList.add('hidden');
         }
 
-        node.querySelector('.event-date')!.textContent = formatEventDate(event.eventDate);
+        node.querySelector('.event-date')!.textContent = formatEventWhen(event);
         node.querySelector('.event-title')!.textContent = event.title;
         node.querySelector('.event-desc')!.textContent = truncate(event.description, 120);
 
@@ -426,5 +409,61 @@ const storeItems = (await getCollection('store')).sort((a, b) => a.data.order - 
     loadingEl?.remove();
     section?.classList.add('hidden');
     console.error('Failed to load Tweeble programs', err);
+  });
+</script>
+
+<template id="home-product-card-template">
+  <a class="card-photo group" href="/temple-store/">
+    <div class="relative h-52 overflow-hidden bg-gradient-to-br from-maroon-600 to-maroon-800">
+      <img class="product-cover hidden h-52 w-full object-cover" loading="lazy" alt="" />
+      <span class="product-fallback flex h-52 items-center justify-center font-display text-3xl text-marigold-200">ॐ</span>
+    </div>
+    <div class="p-6">
+      <h3 class="product-name font-display text-base font-semibold text-maroon-700 group-hover:text-marigold-600"></h3>
+      <p class="product-price mt-2 font-display text-lg font-semibold text-maroon-700"></p>
+    </div>
+  </a>
+</template>
+
+<script>
+  import { loadFeed, pick, formatCents, truncate, type TweebleProduct } from '../lib/tweeble-client';
+  import { TWEEBLE as TWS } from '../lib/site';
+
+  const section = document.getElementById('home-store');
+  const gridEl = document.getElementById('home-store-grid');
+  const template = document.getElementById('home-product-card-template') as HTMLTemplateElement | null;
+
+  // Redraws the whole strip, so it can run from the cached copy and again from the live feed.
+  function render(products: TweebleProduct[]) {
+    if (!gridEl || !template) return;
+    gridEl.replaceChildren();
+    const none = !Array.isArray(products) || products.length === 0;
+    section?.classList.toggle('hidden', none);
+    if (none) return;
+
+    for (const product of products.slice(0, 4)) {
+      const node = template.content.cloneNode(true) as DocumentFragment;
+      const name = pick<string>(product, ['name', 'title']) ?? 'Temple Product';
+      const coverUrl = pick<string>(product, ['coverPhotoUrl', 'coverImageUrl', 'imageUrl']);
+      const priceCents = pick<number>(product, ['priceCents', 'price']) ?? 0;
+
+      const img = node.querySelector<HTMLImageElement>('.product-cover')!;
+      const fallback = node.querySelector<HTMLElement>('.product-fallback')!;
+      if (coverUrl) {
+        img.src = coverUrl;
+        img.alt = name;
+        img.classList.remove('hidden');
+        fallback.classList.add('hidden');
+      }
+
+      node.querySelector('.product-name')!.textContent = truncate(name, 60);
+      node.querySelector('.product-price')!.textContent = formatCents(priceCents);
+      gridEl.appendChild(node);
+    }
+  }
+
+  loadFeed<TweebleProduct[]>(TWS.api.products, render).catch((err) => {
+    section?.classList.add('hidden');
+    console.error('Failed to load Tweeble products', err);
   });
 </script>

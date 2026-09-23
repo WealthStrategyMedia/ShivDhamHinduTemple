@@ -10,7 +10,7 @@ const { Content } = page ? await render(page) : { Content: null };
 const mapSrc = `https://maps.google.com/maps?q=${encodeURIComponent(SITE.address.full)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
 ---
 
-<BaseLayout feeds={[TWEEBLE.contactForms.contactUs]} title="Contact Us" description={page?.data.summary}>
+<BaseLayout feeds={[TWEEBLE.contactForms.contactUs, TWEEBLE.contactForms.feedback]} title="Contact Us" description={page?.data.summary}>
   <PageHero eyebrow={SITE.shortName} title="Contact Us" description={page?.data.summary} image={page?.data.hero} imageAlt={page?.data.heroAlt} compact />
 
   <div class="container-page py-16 sm:py-20">
@@ -20,9 +20,15 @@ const mapSrc = `https://maps.google.com/maps?q=${encodeURIComponent(SITE.address
 
         <div>
           <h2 class="text-maroon-700">Send a Message</h2>
-          <p class="mt-2 text-sm text-ivory-600">We're happy to answer questions about worship timings, puja bookings, festivals, classes, or volunteering.</p>
+          <p class="mt-2 text-sm text-ivory-600">Choose whether you have a general question or want to share feedback, then send us a message.</p>
           <div class="mt-6">
-            <TweebleForm formUrl={TWEEBLE.contactForms.contactUs} />
+            <TweebleForm
+              formUrl={TWEEBLE.contactForms.contactUs}
+              variants={[
+                { key: 'general', label: 'General Inquiry', formUrl: TWEEBLE.contactForms.contactUs },
+                { key: 'feedback', label: 'Feedback', formUrl: TWEEBLE.contactForms.feedback },
+              ]}
+            />
           </div>
         </div>
       </div>

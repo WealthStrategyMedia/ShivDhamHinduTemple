@@ -132,7 +132,6 @@ export const NAV = [
     children: [
       { label: 'Temple Hub', href: '/temple-hub/' },
       { label: 'Volunteering', href: '/volunteering/' },
-      { label: 'Your Voice Matters', href: '/your-voice-matters/' },
       { label: 'Vendor Registration', href: '/vendor-registration/' },
     ],
   },

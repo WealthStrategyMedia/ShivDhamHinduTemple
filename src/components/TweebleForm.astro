@@ -4,15 +4,46 @@
 // in the site's own styling, then POSTs the answers back to that same URL,
 // so submissions are tracked (and emailed) by Tweeble. Editing a form in
 // Tweeble changes it here on the next page load — no redeploy needed.
+//
+// `variants` optionally turns this into two (or more) forms sharing one card,
+// switched with a segmented control (e.g. Contact Us's "General Inquiry" /
+// "Feedback") — each entry's own Tweeble form loads the first time it's
+// selected, then is cached for instant switching back and forth.
 import { SITE } from '../lib/site';
+
+interface Variant {
+  key: string;
+  label: string;
+  formUrl: string;
+}
 
 interface Props {
   formUrl: string;
+  variants?: Variant[];
 }
-const { formUrl } = Astro.props;
+const { formUrl, variants } = Astro.props;
+const hasVariants = (variants?.length ?? 0) > 1;
 ---
 
-<div class="tweeble-form" data-form-url={formUrl}>
+<div class="tweeble-form" data-form-url={formUrl} data-variants={hasVariants ? JSON.stringify(variants) : undefined}>
+  {hasVariants && (
+    <div class="tf-variants mb-6 inline-flex gap-1 rounded-full bg-ivory-100 p-1" role="group">
+      {variants!.map((v, i) => (
+        <button
+          type="button"
+          class:list={[
+            'tf-variant-btn rounded-full px-5 py-2 text-sm font-semibold transition',
+            i === 0 ? 'bg-white text-maroon-700 shadow-sm' : 'text-ivory-600 hover:text-maroon-700',
+          ]}
+          data-form-url={v.formUrl}
+          aria-pressed={i === 0 ? 'true' : 'false'}
+        >
+          {v.label}
+        </button>
+      ))}
+    </div>
+  )}
+
   <div class="tf-loading card animate-pulse space-y-5 p-6 sm:p-8" aria-live="polite">
     <div class="grid gap-5 sm:grid-cols-2">
       <div class="h-11 rounded-lg bg-ivory-200"></div>
@@ -145,7 +176,7 @@ const { formUrl } = Astro.props;
   }
 
   function initForm(root: HTMLElement) {
-    const formUrl = root.dataset.formUrl!;
+    const defaultFormUrl = root.dataset.formUrl!;
     const loading = root.querySelector<HTMLElement>('.tf-loading')!;
     const errorBox = root.querySelector<HTMLElement>('.tf-error')!;
     const form = root.querySelector<HTMLFormElement>('.tf-form')!;
@@ -153,18 +184,80 @@ const { formUrl } = Astro.props;
     const submitBtn = root.querySelector<HTMLButtonElement>('.tf-submit')!;
     const statusEl = root.querySelector<HTMLElement>('.tf-status')!;
     const successBox = root.querySelector<HTMLElement>('.tf-success')!;
+    const variantBtns = [...root.querySelectorAll<HTMLButtonElement>('.tf-variant-btn')];
 
+    // The `?service=` prefill (from a puja-booking "Request" link) only makes
+    // sense on the default form (Contact Us), never on an alternate like Feedback.
     const serviceRequest = new URLSearchParams(location.search).get('service');
-    let schema: TweebleFormSchema | null = null;
+
+    const schemaCache = new Map<string, TweebleFormSchema>();
+    let currentUrl = defaultFormUrl;
+    let activeSchema: TweebleFormSchema | null = null;
+    let requestSeq = 0;
+
+    function renderSchema(schema: TweebleFormSchema, url: string) {
+      activeSchema = schema;
+      fieldsEl.replaceChildren();
+      for (const field of schema.fields) fieldsEl.appendChild(buildField(field, url === defaultFormUrl ? serviceRequest : null));
+      submitBtn.textContent = schema.submitLabel || 'Send';
+      form.classList.remove('hidden');
+    }
+
+    async function loadVariant(url: string) {
+      currentUrl = url;
+      successBox.classList.remove('flex');
+      successBox.classList.add('hidden');
+      statusEl.textContent = '';
+
+      const cached = schemaCache.get(url);
+      if (cached) {
+        errorBox.classList.add('hidden');
+        renderSchema(cached, url);
+        return;
+      }
+
+      const seq = ++requestSeq;
+      form.classList.add('hidden');
+      errorBox.classList.add('hidden');
+      loading.classList.remove('hidden');
+      try {
+        const schema = await fetchTweebleFormSchema(url);
+        if (seq !== requestSeq) return; // a newer variant was selected meanwhile
+        schemaCache.set(url, schema);
+        renderSchema(schema, url);
+      } catch (err) {
+        if (seq !== requestSeq) return;
+        errorBox.classList.remove('hidden');
+        console.error('Failed to load Tweeble form', err);
+      } finally {
+        if (seq === requestSeq) loading.classList.add('hidden');
+      }
+    }
+
+    variantBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const url = btn.dataset.formUrl!;
+        if (url === currentUrl) return;
+        variantBtns.forEach((b) => {
+          const active = b === btn;
+          b.setAttribute('aria-pressed', String(active));
+          b.classList.toggle('bg-white', active);
+          b.classList.toggle('text-maroon-700', active);
+          b.classList.toggle('shadow-sm', active);
+          b.classList.toggle('text-ivory-600', !active);
+        });
+        loadVariant(url);
+      });
+    });
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
-      if (!schema) return;
+      if (!activeSchema) return;
 
       if (new FormData(form).get('company')) return; // honeypot tripped, silently drop
 
       const body: Record<string, string> = {};
-      for (const field of schema.fields) {
+      for (const field of activeSchema.fields) {
         const el = form.elements.namedItem(field.id) as HTMLInputElement | null;
         const value = el?.value.trim() ?? '';
         if (field.required && !value) {
@@ -181,14 +274,14 @@ const { formUrl } = Astro.props;
       statusEl.className = 'tf-status text-sm text-ivory-600';
 
       try {
-        const res = await fetch(formUrl, {
+        const res = await fetch(currentUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok || data.error) throw new Error(data.error ?? 'Request failed');
-        root.querySelector('.tf-success-message')!.textContent = schema.successMessage;
+        root.querySelector('.tf-success-message')!.textContent = activeSchema.successMessage;
         form.classList.add('hidden');
         successBox.classList.remove('hidden');
         successBox.classList.add('flex');
@@ -204,19 +297,7 @@ const { formUrl } = Astro.props;
       }
     });
 
-    (async () => {
-      try {
-        schema = await fetchTweebleFormSchema(formUrl);
-        for (const field of schema.fields) fieldsEl.appendChild(buildField(field, serviceRequest));
-        submitBtn.textContent = schema.submitLabel || 'Send';
-        form.classList.remove('hidden');
-      } catch (err) {
-        errorBox.classList.remove('hidden');
-        console.error('Failed to load Tweeble form', err);
-      } finally {
-        loading.remove();
-      }
-    })();
+    loadVariant(defaultFormUrl);
   }
 
   document.querySelectorAll<HTMLElement>('.tweeble-form').forEach(initForm);

@@ -265,9 +265,7 @@ export function formatGoalAmount(cents: number): string {
   return `$${(cents / 100).toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
 }
 
-export function formatEventDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' });
-}
+export { formatEventDate, formatEventWhen } from './event-dates';
 
 // A multi-day event (e.g. a 3-day mela) is only "past" once it's actually
 // over — its end date, not its start date. Tweeble reports this itself

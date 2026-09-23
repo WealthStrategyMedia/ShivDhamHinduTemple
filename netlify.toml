@@ -27,6 +27,12 @@
 # new URL. Cache it for a year: repeat visits and returning visitors re-download
 # nothing, which is also what keeps this site light on the hosting account.
 # HTML is deliberately NOT given a long lifetime, so a deploy shows up at once.
+# Video poster images are named after their YouTube id and never change.
+[[headers]]
+  for = "/video-posters/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
 [[headers]]
   for = "/_astro/*"
   [headers.values]
@@ -120,4 +126,10 @@
 [[redirects]]
   from = "/temple-projects/admin-office-and-library/"
   to = "/temple-projects/administrative-office-and-library/"
+  status = 301
+
+# The feedback form is now a tab on the Contact Us form, not its own page.
+[[redirects]]
+  from = "/your-voice-matters/"
+  to = "/contact-us/"
   status = 301

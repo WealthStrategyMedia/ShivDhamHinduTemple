@@ -184,24 +184,6 @@ const prayers = defineCollection({
   }),
 });
 
-/* Temple Store: festival food and goods ordered in advance for pickup.
-   Distinct from `services` (pujas, samskaras, registrations) — these are
-   physical items with a flat price, no venue/booking variants. */
-const store = defineCollection({
-  loader: glob({ base: './src/content/store', pattern: '**/*.{md,mdx}' }),
-  schema: ({ image }) =>
-    z.object({
-      title: z.string(),
-      summary: z.string(),
-      image: image().optional(),
-      price: z.number(),
-      unit: z.string().optional(),
-      stripePriceId: z.string().optional(),
-      order: z.number().default(99),
-      ...seo,
-    }),
-});
-
 export const collections = {
   pages,
   deities,
@@ -210,5 +192,4 @@ export const collections = {
   events,
   locations,
   prayers,
-  store,
 };

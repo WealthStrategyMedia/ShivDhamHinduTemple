@@ -94,11 +94,14 @@ import guruJiHoliHero from '../../assets/photos/guruji-holi.jpg';
       <h2 class="mt-2">See a Celebration in Action</h2>
       <p class="mt-4 text-ivory-600">A look inside Shravan Mela, the temple's community fair — highlights from the conversations, the crowds, and the celebration itself.</p>
     </div>
-    <div class="mt-10 grid gap-6 sm:grid-cols-2">
-      <YouTubeEmbed id="VfXK4py4Z2s" title="A Special Conversation from Shravan Mela 2026" />
-      <YouTubeEmbed id="irIzmfhxN_Q" title="Inside Shravan Mela: Faith, Family, Small Business & New Opportunities at Shri Shiv Dham" />
-      <YouTubeEmbed id="2pNGn70cW0Y" title="Shravan Mela 2026: A Community Celebration to Remember" orientation="portrait" class="mx-auto w-full max-w-xs" />
-      <YouTubeEmbed id="gO2nbjK-2UQ" title="Inside Shravan Mela 2026 at Shri Shiv Dham" orientation="portrait" class="mx-auto w-full max-w-xs" />
+    <!-- One widescreen feature, then the three vertical clips side by side. -->
+    <div class="mt-10 space-y-6">
+      <YouTubeEmbed id="irIzmfhxN_Q" title="Inside Shravan Mela: Faith, Family, Small Business & New Opportunities at Shri Shiv Dham" class="mx-auto w-full max-w-3xl" />
+      <div class="grid gap-6 sm:grid-cols-3">
+        <YouTubeEmbed id="VfXK4py4Z2s" title="A Special Conversation from Shravan Mela 2026" orientation="portrait" class="mx-auto w-full max-w-xs" />
+        <YouTubeEmbed id="2pNGn70cW0Y" title="Shravan Mela 2026: A Community Celebration to Remember" orientation="portrait" class="mx-auto w-full max-w-xs" />
+        <YouTubeEmbed id="gO2nbjK-2UQ" title="Inside Shravan Mela 2026 at Shri Shiv Dham" orientation="portrait" class="mx-auto w-full max-w-xs" />
+      </div>
     </div>
 
     <div class="mt-16 rounded-2xl bg-ivory-100 p-8 text-center">
@@ -138,7 +141,7 @@ import guruJiHoliHero from '../../assets/photos/guruji-holi.jpg';
 </template>
 
 <script>
-  import { loadFeed, formatCents, formatEventDate, truncate, isEventPast, type TweebleEvent } from '../../lib/tweeble-client';
+  import { loadFeed, formatCents, formatEventWhen, truncate, isEventPast, type TweebleEvent } from '../../lib/tweeble-client';
   import { TWEEBLE } from '../../lib/site';
   import { initShareButtons } from '../../lib/share-widget';
   import { initCheckoutButtons } from '../../lib/checkout';
@@ -202,7 +205,7 @@ import guruJiHoliHero from '../../assets/photos/guruji-holi.jpg';
     }
 
     node.querySelector('.event-price')!.textContent = formatCents(event.ticketPriceCents);
-    node.querySelector('.event-date')!.textContent = formatEventDate(event.eventDate);
+    node.querySelector('.event-date')!.textContent = formatEventWhen(event);
     titleLink.textContent = event.title;
     const venue = node.querySelector<HTMLElement>('.event-venue')!;
     if (event.locationLabel) venue.textContent = event.locationLabel;

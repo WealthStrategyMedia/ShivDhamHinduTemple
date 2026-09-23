@@ -96,11 +96,13 @@ function buildCheckout(req: CheckoutRequest): BuiltCheckout {
   titleWrap.appendChild(title);
   heading.appendChild(titleWrap);
 
-  const closeBtn = el('button', 'flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ivory-500 hover:bg-ivory-200 hover:text-maroon-700');
+  // Labeled "Cancel", not just an icon — so backing out is never something a
+  // visitor has to go looking for inside Tweeble's own form.
+  const closeBtn = el('button', 'flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-semibold text-ivory-600 hover:bg-ivory-200 hover:text-maroon-700');
   closeBtn.type = 'button';
-  closeBtn.setAttribute('aria-label', 'Close checkout');
+  closeBtn.setAttribute('aria-label', 'Cancel and close checkout');
   closeBtn.innerHTML =
-    '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+    '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span>Cancel</span>';
   header.append(heading, closeBtn);
 
   // Success banner (shown when Tweeble reports a completed payment)
@@ -118,7 +120,12 @@ function buildCheckout(req: CheckoutRequest): BuiltCheckout {
 
   // Footer
   const footer = el('div', 'border-t border-ivory-200 bg-ivory-50 px-5 py-3 text-center text-xs leading-relaxed text-ivory-500');
-  footer.append(document.createTextNode('Card details go straight to Stripe and never touch this website.'));
+  footer.append(document.createTextNode('Powered by '));
+  const poweredBy = el('a', 'font-semibold text-maroon-700 underline decoration-marigold-300 decoration-2 underline-offset-2', 'Tweeble');
+  poweredBy.setAttribute('href', 'https://www.tweeble.com');
+  poweredBy.setAttribute('target', '_blank');
+  poweredBy.setAttribute('rel', 'noopener');
+  footer.append(poweredBy, document.createTextNode(' — card details go straight to Stripe and never touch this website.'));
   if (req.fallbackUrl) {
     footer.append(document.createTextNode(' Trouble? '));
     const fb = el('a', 'font-semibold text-maroon-700 underline decoration-marigold-300 decoration-2 underline-offset-2', 'Complete this on the Temple Hub');
