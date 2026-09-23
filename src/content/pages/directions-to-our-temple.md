@@ -10,7 +10,7 @@ Shri Shiv Dham Hindu Temple is located at **460 Oberry Hoover Rd, Orlando, FL 32
 <div class="not-prose my-8 overflow-hidden rounded-2xl border border-ivory-200 shadow-lift">
   <iframe
     title="Map to Shri Shiv Dham Hindu Temple"
-    src="https://maps.google.com/maps?q=460%20Oberry%20Hoover%20Rd%2C%20Orlando%2C%20FL%2032825&t=&z=15&ie=UTF8&iwloc=&output=embed"
+    src="https://maps.google.com/maps?q=460%20Oberry%20Hoover%20Rd%2C%20Orlando%2C%20FL%2032825&amp;t=&amp;z=15&amp;ie=UTF8&amp;iwloc=&amp;output=embed"
     width="100%"
     height="360"
     style="border:0"

@@ -9,15 +9,20 @@ import '@fontsource/fraunces/600.css';
 import '@fontsource/fraunces/700.css';
 import interLatin from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
 import frauncesLatin600 from '@fontsource/fraunces/files/fraunces-latin-600-normal.woff2?url';
+import { getImage } from 'astro:assets';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import WhatsAppWidget from '../components/WhatsAppWidget.astro';
 import { SITE } from '../lib/site';
+import defaultOgPhoto from '../assets/photos/altar-shiva-radhakrishna-ganesh.jpg';
+import logo from '../assets/logo.png';
 
 interface Props {
   title: string;
   description?: string;
   image?: string;
+  /** Extra search terms for this page, appended to the site-wide defaults. */
+  keywords?: string[];
   noindex?: boolean;
   /**
    * Tweeble API URLs this page will read. Their requests start here in <head>,
@@ -28,13 +33,25 @@ interface Props {
   tweeble?: boolean;
 }
 
-const { title, description = SITE.tagline, image, noindex = false, feeds = [], tweeble = false } = Astro.props;
+const { title, description = SITE.tagline, image, keywords = [], noindex = false, feeds = [], tweeble = false } = Astro.props;
 const usesTweeble = tweeble || feeds.length > 0;
 const earlyFetch = feeds
   .map((url) => `t[${JSON.stringify(url)}]=fetch(${JSON.stringify(url)}).then(function(r){if(!r.ok)throw 0;return r.json()});t[${JSON.stringify(url)}].catch(function(){});`)
   .join('');
 const pageTitle = title === SITE.name ? title : `${title} | ${SITE.name}`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+// A plain default import's `.src` is only guaranteed to be emitted to the
+// build when something references it through the `<Image>`/`<img>` pipeline;
+// this photo isn't used that way anywhere else, so getImage() is used here
+// to actually force the file to be built, not just predict its future URL.
+const ogImageSrc = image ?? (await getImage({ src: defaultOgPhoto, format: 'jpg', width: 1200 })).src;
+const ogImageURL = new URL(ogImageSrc, Astro.site);
+
+// Google/Bing have ignored the meta keywords tag for over a decade, but it
+// costs nothing to include and some smaller/vertical search tools still read
+// it, so the site-wide defaults plus any page-specific terms go out anyway.
+const SITE_KEYWORDS = ['Hindu temple Orlando', 'Shiv Dham', 'puja booking', 'Hindu temple Central Florida', 'temple donations'];
+const metaKeywords = [...new Set([...keywords, ...SITE_KEYWORDS])].join(', ');
 ---
 
 <!doctype html>
@@ -46,15 +63,23 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <link rel="canonical" href={canonicalURL} />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
-    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <meta name="keywords" content={metaKeywords} />
+    {noindex ? <meta name="robots" content="noindex, nofollow" /> : <meta name="robots" content="index, follow" />}
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalURL} />
+    <meta property="og:site_name" content={SITE.name} />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
-    {image && <meta property="og:image" content={new URL(image, Astro.site)} />}
+    <meta property="og:image" content={ogImageURL} />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageURL} />
 
     {usesTweeble && (
       <>
@@ -73,9 +98,11 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
       '@context': 'https://schema.org',
       '@type': 'HinduTemple',
       name: SITE.name,
+      description: SITE.tagline,
       url: SITE.url,
       telephone: SITE.phone,
       email: SITE.email,
+      image: new URL(logo.src, Astro.site).toString(),
       address: {
         '@type': 'PostalAddress',
         streetAddress: SITE.address.street,
@@ -84,6 +111,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
         postalCode: SITE.address.zip,
         addressCountry: 'US',
       },
+      sameAs: Object.values(SITE.social),
     })} />
   </head>
   <body class="flex min-h-screen flex-col">
