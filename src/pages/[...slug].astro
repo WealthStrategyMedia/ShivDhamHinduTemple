@@ -112,7 +112,7 @@ const EXPLORE_MORE = [
   <div class="container-page py-14 sm:py-16">
     <div class="grid gap-10 lg:grid-cols-[3fr_2fr] lg:items-start">
       <article class="container-prose mx-0 max-w-none px-0">
-        <div class="prose-temple">
+        <div class="prose-temple" data-program-description={program ? true : undefined}>
           {program ? <Fragment set:html={descriptionToHtml(program.description)} /> : Content && <Content />}
         </div>
       </article>
@@ -213,6 +213,7 @@ const EXPLORE_MORE = [
 
 <script>
   import { fetchTweeblePrograms, formatCents, formatEventDate } from '../lib/tweeble-client';
+  import { descriptionToHtml } from '../lib/description';
   import { initCheckoutButtons, programButtonLabel } from '../lib/checkout';
   initCheckoutButtons();
 
@@ -242,6 +243,23 @@ const EXPLORE_MORE = [
           note.textContent = "This program isn't currently scheduled. See what's running now:";
           card.querySelector('[data-program-cta], a.btn-primary')?.before(note);
           return;
+        }
+
+        // The page was pre-built from whatever this program looked like at
+        // the last deploy — refresh title/description/price too, so an edit
+        // made on Tweeble shows up without waiting on a redeploy.
+        document.title = document.title.replace(/^[^|]+/, `${program.title} `);
+        const heroTitle = document.querySelector('[data-hero-title]');
+        if (heroTitle) heroTitle.textContent = program.title;
+        const heroDesc = document.querySelector('[data-hero-description]');
+        if (heroDesc) heroDesc.textContent = program.shortDescription;
+        const descHolder = document.querySelector('[data-program-description]');
+        if (descHolder) descHolder.innerHTML = descriptionToHtml(program.description);
+
+        for (const trigger of document.querySelectorAll<HTMLElement>('[data-program-cta], [data-program-cta-hero]')) {
+          trigger.dataset.buyTitle = program.title;
+          trigger.dataset.buyFallback = program.url;
+          if (program.embedUrl) trigger.dataset.buyEmbed = program.embedUrl;
         }
 
         if (program.scheduleLabel) setFact('schedule', program.scheduleLabel);

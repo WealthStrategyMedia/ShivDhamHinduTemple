@@ -1,11 +1,11 @@
 ---
 import { TWEEBLE } from '../../lib/site';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import PageHero from '../../components/PageHero.astro';
+import Mandala from '../../components/Mandala.astro';
 import GoalGrid from '../../components/GoalGrid.astro';
 import { getGoalPages, getGoalUrlMap } from '../../lib/fundraising';
-import { descriptionToHtml } from '../../lib/description';
-import { formatGoalAmount, truncate } from '../../lib/tweeble-client';
+import { descriptionToHtml, summaryFromDescription } from '../../lib/description';
+import { formatGoalAmount } from '../../lib/tweeble-client';
 
 export async function getStaticPaths() {
   const pages = await getGoalPages();
@@ -14,32 +14,35 @@ export async function getStaticPaths() {
 
 const { goal } = Astro.props;
 const urlMap = await getGoalUrlMap();
-const firstParagraph = (goal.description.split(/\r?\n\r?\n/)[0] ?? '').replace(/\s+/g, ' ').trim();
-const summary = firstParagraph.match(/^.{20,260}?[.!?](?=\s|$)/)?.[0] ?? truncate(firstParagraph, 200);
+const summary = summaryFromDescription(goal.description);
 ---
 
 <BaseLayout feeds={[TWEEBLE.api.fundraising]} title={goal.title} description={summary}>
-  <PageHero eyebrow="Temple Projects" title={goal.title} description={summary} compact>
-    <div class="mt-7 flex flex-wrap items-center gap-2.5 text-sm text-ivory-50">
-      {goal.targetCents > 0 && (
-        <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 ring-1 ring-white/20">
+  <div class="hero-pattern flex items-end">
+    <Mandala class="mandala-decor" />
+    <div class="hero-content container-page w-full py-12 sm:py-16 lg:py-20">
+      <p class="eyebrow text-marigold-300">Temple Projects</p>
+      <h1 class="mt-2 text-white" data-goal-hero-title>{goal.title}</h1>
+      <p class="mt-4 max-w-2xl text-lg text-ivory-100" data-goal-hero-summary>{summary}</p>
+      <div class="mt-7 flex flex-wrap items-center gap-2.5 text-sm text-ivory-50">
+        <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 ring-1 ring-white/20" data-goal-hero-target-badge class:list={{ hidden: goal.targetCents <= 0 }}>
           <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-marigold-300" aria-hidden="true"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4" /><circle cx="12" cy="12" r="0.5" /></svg>
-          Goal {formatGoalAmount(goal.targetCents)}
+          Goal <span data-goal-hero-target>{goal.targetCents > 0 ? formatGoalAmount(goal.targetCents) : ''}</span>
         </span>
-      )}
-      <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 ring-1 ring-white/20">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-marigold-300" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
-        Tax deductible
-      </span>
+        <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 ring-1 ring-white/20">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-marigold-300" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
+          Tax deductible
+        </span>
+      </div>
+      <button type="button" class="btn-primary mt-8" data-goal-cta-hero data-buy data-buy-type="fundraising" data-buy-item={goal.id} data-buy-title={goal.title} data-buy-fallback={goal.url} data-buy-embed={goal.embedUrl}>Donate to This Project</button>
     </div>
-    <button type="button" class="btn-primary mt-8" data-goal-cta-hero data-buy data-buy-type="fundraising" data-buy-item={goal.id} data-buy-title={goal.title} data-buy-fallback={goal.url} data-buy-embed={goal.embedUrl}>Donate to This Project</button>
-  </PageHero>
+  </div>
 
   <div class="container-page grid gap-10 py-14 sm:py-16 lg:grid-cols-[3fr_2fr] lg:items-start" data-goal-page data-goal-id={goal.id}>
     <article>
       <!-- Photos load in the browser: their signed URLs expire within the hour. -->
       <div data-goal-photos class="mb-10 hidden space-y-3"></div>
-      <div class="prose-temple">
+      <div class="prose-temple" data-goal-description>
         <Fragment set:html={descriptionToHtml(goal.description)} />
       </div>
     </article>
@@ -94,6 +97,7 @@ const summary = firstParagraph.match(/^.{20,260}?[.!?](?=\s|$)/)?.[0] ?? truncat
 
 <script>
   import { fetchTweebleFundraising, formatGoalAmount } from '../../lib/tweeble-client';
+  import { descriptionToHtml, summaryFromDescription } from '../../lib/description';
   import { initShareButtons } from '../../lib/share-widget';
   import { initCheckoutButtons } from '../../lib/checkout';
   initShareButtons();
@@ -118,6 +122,35 @@ const summary = firstParagraph.match(/^.{20,260}?[.!?](?=\s|$)/)?.[0] ?? truncat
             btn.replaceWith(link);
           });
           return;
+        }
+
+        // The page was pre-built from whatever this goal looked like at the
+        // last deploy — refresh every text field from the live feed too, so
+        // an edit made on Tweeble (title, story, target) shows up without
+        // waiting on a redeploy, exactly like the progress bar already does.
+        document.title = document.title.replace(/^[^|]+/, `${goal.title} `);
+        const heroTitle = page.querySelector('[data-goal-hero-title]');
+        if (heroTitle) heroTitle.textContent = goal.title;
+        const heroSummary = page.querySelector('[data-goal-hero-summary]');
+        if (heroSummary) heroSummary.textContent = summaryFromDescription(goal.description);
+        const descHolder = page.querySelector('[data-goal-description]');
+        if (descHolder) descHolder.innerHTML = descriptionToHtml(goal.description);
+
+        const heroTargetBadge = page.querySelector<HTMLElement>('[data-goal-hero-target-badge]');
+        const heroTargetText = page.querySelector('[data-goal-hero-target]');
+        if (heroTargetBadge && heroTargetText) {
+          if (goal.targetCents > 0) {
+            heroTargetText.textContent = formatGoalAmount(goal.targetCents);
+            heroTargetBadge.classList.remove('hidden');
+          } else {
+            heroTargetBadge.classList.add('hidden');
+          }
+        }
+
+        for (const trigger of page.querySelectorAll<HTMLElement>('[data-goal-cta], [data-goal-cta-hero]')) {
+          trigger.dataset.buyTitle = goal.title;
+          trigger.dataset.buyFallback = goal.url;
+          if (goal.embedUrl) trigger.dataset.buyEmbed = goal.embedUrl;
         }
 
         if (goal.targetCents > 0) {

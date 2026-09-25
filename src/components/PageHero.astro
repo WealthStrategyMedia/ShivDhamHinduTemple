@@ -34,8 +34,8 @@ const focusClass = {
     <Image src={image} alt={imageAlt} width={1920} height={compact ? 640 : 900} widths={[640, 960, 1280, 1920]} sizes="100vw" loading="eager" fetchpriority="high" class:list={['', focusClass]} />
     <div class="hero-content container-page w-full py-12 sm:py-16 lg:py-20">
       {eyebrow && <p class="eyebrow text-marigold-300">{eyebrow}</p>}
-      <h1 class="mt-2 text-white">{title}</h1>
-      {description && <p class="mt-4 max-w-2xl text-lg text-ivory-100">{description}</p>}
+      <h1 class="mt-2 text-white" data-hero-title>{title}</h1>
+      {description && <p class="mt-4 max-w-2xl text-lg text-ivory-100" data-hero-description>{description}</p>}
       <slot />
     </div>
   </div>
@@ -44,8 +44,8 @@ const focusClass = {
     <Mandala class="mandala-decor" />
     <div class="hero-content container-page w-full py-12 sm:py-16 lg:py-20">
       {eyebrow && <p class="eyebrow text-marigold-300">{eyebrow}</p>}
-      <h1 class="mt-2 text-white">{title}</h1>
-      {description && <p class="mt-4 max-w-2xl text-lg text-ivory-100">{description}</p>}
+      <h1 class="mt-2 text-white" data-hero-title>{title}</h1>
+      {description && <p class="mt-4 max-w-2xl text-lg text-ivory-100" data-hero-description>{description}</p>}
       <slot />
     </div>
   </div>

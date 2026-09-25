@@ -1,6 +1,12 @@
-import { escapeHtml } from './tweeble-client';
+import { escapeHtml, truncate } from './tweeble-client';
 
 const LABELLED = /^([^:.,;!?]{2,40}):\s+(\S.*)$/;
+
+/** A one- or two-sentence teaser pulled from a Tweeble description's first paragraph. */
+export function summaryFromDescription(description: string): string {
+  const firstParagraph = (description.split(/\r?\n\r?\n/)[0] ?? '').replace(/\s+/g, ' ').trim();
+  return firstParagraph.match(/^.{20,260}?[.!?](?=\s|$)/)?.[0] ?? truncate(firstParagraph, 200);
+}
 
 const paragraph = (line: string) => {
   const m = line.match(LABELLED);
