@@ -1,0 +1,162 @@
+---
+// A generic, always-live fallback for a program's detail view. Program pages
+// (flat slugs like /yoga-classes/) are pre-built from the feed at build
+// time, so a program added on Tweeble after the last deploy has no page yet.
+// This page needs no rebuild ever: it reads ?id=<program id> and renders
+// that program's full detail entirely from the live Tweeble feed, in the
+// browser. Cards link here as their "Learn More" fallback whenever a
+// program isn't (yet) one of the pretty pre-built pages.
+import { TWEEBLE } from '../../../lib/site';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Mandala from '../../../components/Mandala.astro';
+---
+
+<BaseLayout feeds={[TWEEBLE.api.programs]} title="Program" description="A current program at Shri Shiv Dham Hindu Temple." tweeble>
+  <div class="hero-pattern flex items-end">
+    <Mandala class="mandala-decor" />
+    <div class="hero-content container-page w-full py-12 sm:py-16 lg:py-20">
+      <p class="eyebrow text-marigold-300">Programs</p>
+      <h1 class="mt-2 text-white" data-program-hero-title>Loading This Program…</h1>
+    </div>
+  </div>
+
+  <div class="container-page py-14 sm:py-16">
+    <div id="program-loading" class="grid gap-10 lg:grid-cols-[3fr_2fr]" aria-live="polite">
+      <div class="animate-pulse space-y-4">
+        <div class="h-4 w-2/3 rounded bg-ivory-200"></div>
+        <div class="h-4 w-full rounded bg-ivory-200"></div>
+        <div class="h-4 w-5/6 rounded bg-ivory-200"></div>
+      </div>
+      <div class="card animate-pulse space-y-3 p-6">
+        <div class="h-5 w-2/3 rounded bg-ivory-200"></div>
+        <div class="h-10 w-full rounded bg-ivory-200"></div>
+      </div>
+    </div>
+
+    <div id="program-not-found" class="hidden rounded-2xl bg-ivory-100 p-10 text-center">
+      <h2>We Couldn't Find That Program</h2>
+      <p class="mt-3 text-ivory-600">It may have ended or been removed. Here's everything currently offered.</p>
+      <a href="/programs/" class="btn-primary mt-6">See Current Programs</a>
+    </div>
+
+    <div id="program-content" class="hidden grid gap-10 lg:grid-cols-[3fr_2fr] lg:items-start">
+      <article>
+        <p class="text-lg leading-relaxed text-ivory-700" data-program-desc></p>
+      </article>
+
+      <aside class="space-y-6 lg:sticky lg:top-24">
+        <div class="card p-6">
+          <div class="flex items-start justify-between gap-4">
+            <p class="font-display text-2xl font-semibold text-maroon-700" data-program-price></p>
+            <button type="button" class="share-trigger flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-ivory-200 text-ivory-500 hover:border-marigold-300 hover:bg-marigold-50 hover:text-maroon-700" aria-label="Share this program" data-share-title="">
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 10.6 15.4 6.9M8.6 13.4l6.8 3.7" /></svg>
+            </button>
+          </div>
+
+          <dl class="mt-5 space-y-3 text-sm">
+            <div class="hidden items-start justify-between gap-3 rounded-xl border border-ivory-200 bg-ivory-50 px-4 py-3" data-program-schedule-row>
+              <dt class="font-medium text-ivory-800">Schedule</dt>
+              <dd class="text-right text-ivory-600" data-program-schedule></dd>
+            </div>
+            <div class="hidden items-start justify-between gap-3 rounded-xl border border-ivory-200 bg-ivory-50 px-4 py-3" data-program-next-row>
+              <dt class="font-medium text-ivory-800">Next Session</dt>
+              <dd class="text-right text-ivory-600" data-program-next></dd>
+            </div>
+            <div class="hidden items-start justify-between gap-3 rounded-xl border border-ivory-200 bg-ivory-50 px-4 py-3" data-program-location-row>
+              <dt class="font-medium text-ivory-800">Location</dt>
+              <dd class="text-right text-ivory-600" data-program-location></dd>
+            </div>
+            <div class="hidden items-start justify-between gap-3 rounded-xl border border-ivory-200 bg-ivory-50 px-4 py-3" data-program-age-row>
+              <dt class="font-medium text-ivory-800">Ages</dt>
+              <dd class="text-right text-ivory-600" data-program-age></dd>
+            </div>
+          </dl>
+
+          <button type="button" class="btn-primary mt-6 w-full" data-buy data-buy-type="program">Register</button>
+          <p class="mt-4 text-center text-xs text-ivory-500">Register and pay right here, securely. Questions first? <a href="/contact-us/" class="underline">Contact the temple office</a>.</p>
+        </div>
+
+        <a href="/programs/" class="block text-center text-sm font-semibold text-maroon-700 hover:underline">← All Programs</a>
+      </aside>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { fetchTweeblePrograms, formatCents, formatEventDate, type TweebleProgram } from '../../../lib/tweeble-client';
+  import { initShareButtons } from '../../../lib/share-widget';
+  import { initCheckoutButtons, programButtonLabel } from '../../../lib/checkout';
+  initShareButtons();
+  initCheckoutButtons();
+
+  const id = new URLSearchParams(location.search).get('id');
+  const loadingEl = document.getElementById('program-loading');
+  const notFoundEl = document.getElementById('program-not-found');
+  const contentEl = document.getElementById('program-content');
+
+  function setOrHide(rowSel: string, valueSel: string, value: string | null | undefined) {
+    const row = document.querySelector(rowSel);
+    if (!row) return;
+    if (value) {
+      document.querySelector(valueSel)!.textContent = value;
+      row.classList.remove('hidden');
+      row.classList.add('flex');
+    }
+  }
+
+  function showNotFound() {
+    loadingEl?.remove();
+    contentEl?.remove();
+    notFoundEl?.classList.remove('hidden');
+    const heroTitle = document.querySelector('[data-program-hero-title]');
+    if (heroTitle) heroTitle.textContent = 'Program Not Found';
+  }
+
+  (async () => {
+    if (!id) return showNotFound();
+
+    let program: TweebleProgram | undefined;
+    try {
+      const programs = await fetchTweeblePrograms();
+      program = programs.find((p) => p.id === id);
+    } catch (err) {
+      console.error('Failed to load Tweeble programs', err);
+    }
+
+    if (!program) return showNotFound();
+
+    document.title = `${program.title} | ${document.title.split('|').slice(1).join('|').trim()}`;
+    const heroTitle = document.querySelector('[data-program-hero-title]');
+    if (heroTitle) heroTitle.textContent = program.title;
+
+    const descEl = document.querySelector('[data-program-desc]');
+    if (descEl) descEl.textContent = program.description || program.shortDescription;
+
+    const priceEl = document.querySelector('[data-program-price]');
+    if (priceEl) priceEl.textContent = program.isFree ? 'Free' : formatCents(program.priceCents);
+
+    setOrHide('[data-program-schedule-row]', '[data-program-schedule]', program.scheduleLabel);
+    setOrHide('[data-program-next-row]', '[data-program-next]', program.nextOccurrence ? formatEventDate(program.nextOccurrence) : null);
+    setOrHide('[data-program-location-row]', '[data-program-location]', program.locationLabel);
+    setOrHide('[data-program-age-row]', '[data-program-age]', program.minimumAge ? `${program.minimumAge}+` : null);
+
+    const buy = document.querySelector<HTMLButtonElement>('[data-buy][data-buy-type="program"]');
+    if (buy) {
+      buy.textContent = programButtonLabel(program.isFree);
+      buy.dataset.buyItem = program.id;
+      buy.dataset.buyTitle = program.title;
+      buy.dataset.buyFallback = program.url;
+      if (program.embedUrl) buy.dataset.buyEmbed = program.embedUrl;
+    }
+
+    const shareBtn = document.querySelector<HTMLElement>('.share-trigger');
+    if (shareBtn) {
+      shareBtn.dataset.shareUrl = location.href;
+      shareBtn.dataset.shareTitle = program.title;
+    }
+
+    loadingEl?.remove();
+    contentEl?.classList.remove('hidden');
+    contentEl?.classList.add('grid');
+  })();
+</script>

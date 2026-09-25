@@ -147,15 +147,16 @@ const { urlMap, excludeId, wrapperId } = Astro.props;
     buy.dataset.buyFallback = program.url;
     if (program.embedUrl) buy.dataset.buyEmbed = program.embedUrl;
 
-    const detailUrl = urlMap[program.id];
-    if (detailUrl) {
-      const details = node.querySelector<HTMLAnchorElement>('.program-details')!;
-      details.href = detailUrl;
-      details.classList.remove('hidden');
-    }
+    // A program added on Tweeble after the last deploy has no pre-built
+    // pretty page yet — fall back to the generic, always-live detail page
+    // instead of hiding "Learn More" until the next deploy catches up.
+    const detailUrl = urlMap[program.id] ?? `/programs/detail/?id=${encodeURIComponent(program.id)}`;
+    const details = node.querySelector<HTMLAnchorElement>('.program-details')!;
+    details.href = detailUrl;
+    details.classList.remove('hidden');
 
     const shareBtn = node.querySelector<HTMLElement>('.share-trigger')!;
-    shareBtn.dataset.shareUrl = detailUrl ? new URL(detailUrl, location.origin).href : program.url;
+    shareBtn.dataset.shareUrl = new URL(detailUrl, location.origin).href;
     shareBtn.dataset.shareTitle = program.title;
 
     gridEl.appendChild(node);

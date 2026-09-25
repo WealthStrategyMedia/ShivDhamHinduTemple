@@ -143,15 +143,16 @@ const { urlMap, excludeId, wrapperId } = Astro.props;
     donate.dataset.buyFallback = goal.url;
     if (goal.embedUrl) donate.dataset.buyEmbed = goal.embedUrl;
 
-    const detailUrl = urlMap[goal.id];
-    if (detailUrl) {
-      const details = node.querySelector<HTMLAnchorElement>('.goal-details')!;
-      details.href = detailUrl;
-      details.classList.remove('hidden');
-    }
+    // A goal added on Tweeble after the last deploy has no pre-built pretty
+    // page yet — fall back to the generic, always-live detail page instead
+    // of hiding "Learn More" until the next deploy happens to catch up.
+    const detailUrl = urlMap[goal.id] ?? `/temple-projects/goal/?id=${encodeURIComponent(goal.id)}`;
+    const details = node.querySelector<HTMLAnchorElement>('.goal-details')!;
+    details.href = detailUrl;
+    details.classList.remove('hidden');
 
     const shareBtn = node.querySelector<HTMLElement>('.share-trigger')!;
-    shareBtn.dataset.shareUrl = detailUrl ? new URL(detailUrl, location.origin).href : goal.url;
+    shareBtn.dataset.shareUrl = new URL(detailUrl, location.origin).href;
     shareBtn.dataset.shareTitle = goal.title;
 
     gridEl.appendChild(node);

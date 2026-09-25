@@ -1,0 +1,201 @@
+---
+// A generic, always-live fallback for a fundraising goal's detail view.
+// /temple-projects/<slug>/ pages are pre-built from the feed at build time,
+// so a goal added on Tweeble after the last deploy has no page yet. This
+// page needs no rebuild ever: it reads ?id=<goal id> and renders that goal's
+// full detail entirely from the live Tweeble feed, in the browser. Cards
+// link here as their "Learn More" fallback whenever a goal isn't (yet) one
+// of the pretty pre-built pages.
+import { TWEEBLE } from '../../../lib/site';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Mandala from '../../../components/Mandala.astro';
+---
+
+<BaseLayout feeds={[TWEEBLE.api.fundraising]} title="Temple Project" description="A current fundraising goal at Shri Shiv Dham Hindu Temple.">
+  <div class="hero-pattern flex items-end">
+    <Mandala class="mandala-decor" />
+    <div class="hero-content container-page w-full py-12 sm:py-16 lg:py-20">
+      <p class="eyebrow text-marigold-300">Temple Projects</p>
+      <h1 class="mt-2 text-white" data-goal-hero-title>Loading This Project…</h1>
+      <div class="mt-7 hidden flex-wrap items-center gap-2.5 text-sm text-ivory-50" data-goal-hero-badges>
+        <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 ring-1 ring-white/20" data-goal-hero-target-badge>
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-marigold-300" aria-hidden="true"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4" /><circle cx="12" cy="12" r="0.5" /></svg>
+          <span data-goal-hero-target></span>
+        </span>
+        <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 ring-1 ring-white/20">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-marigold-300" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
+          Tax deductible
+        </span>
+      </div>
+      <button type="button" class="btn-primary mt-8 hidden" data-goal-cta-hero data-buy data-buy-type="fundraising">Donate to This Project</button>
+    </div>
+  </div>
+
+  <div class="container-page py-14 sm:py-16">
+    <div id="goal-loading" class="grid gap-10 lg:grid-cols-[3fr_2fr]" aria-live="polite">
+      <div class="animate-pulse space-y-4">
+        <div class="h-4 w-2/3 rounded bg-ivory-200"></div>
+        <div class="h-4 w-full rounded bg-ivory-200"></div>
+        <div class="h-4 w-5/6 rounded bg-ivory-200"></div>
+        <div class="h-4 w-3/4 rounded bg-ivory-200"></div>
+      </div>
+      <div class="card animate-pulse space-y-3 p-6">
+        <div class="h-5 w-2/3 rounded bg-ivory-200"></div>
+        <div class="h-10 w-full rounded bg-ivory-200"></div>
+      </div>
+    </div>
+
+    <div id="goal-not-found" class="hidden rounded-2xl bg-ivory-100 p-10 text-center">
+      <h2>We Couldn't Find That Project</h2>
+      <p class="mt-3 text-ivory-600">It may have been completed or removed. Here's everything the temple is currently raising funds for.</p>
+      <a href="/temple-projects/" class="btn-primary mt-6">See Current Projects</a>
+    </div>
+
+    <div id="goal-content" class="hidden grid gap-10 lg:grid-cols-[3fr_2fr] lg:items-start">
+      <article>
+        <div data-goal-photos class="mb-10 hidden space-y-3"></div>
+        <div class="prose-temple" data-goal-description></div>
+      </article>
+
+      <aside class="space-y-6 lg:sticky lg:top-24">
+        <div class="card p-6">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="eyebrow">Project Goal</p>
+              <p class="mt-1 font-display text-3xl font-semibold text-maroon-700" data-goal-target>Community-funded</p>
+            </div>
+            <button type="button" class="share-trigger flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-ivory-200 text-ivory-500 hover:border-marigold-300 hover:bg-marigold-50 hover:text-maroon-700" aria-label="Share this project" data-share-title="">
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 10.6 15.4 6.9M8.6 13.4l6.8 3.7" /></svg>
+            </button>
+          </div>
+
+          <div data-goal-progress class="mt-5 hidden">
+            <div class="flex items-baseline justify-between text-sm">
+              <span class="font-display font-semibold text-maroon-700" data-goal-raised></span>
+              <span class="text-xs font-medium text-ivory-500" data-goal-percent></span>
+            </div>
+            <div class="mt-1.5 h-2.5 w-full overflow-hidden rounded-full bg-ivory-200">
+              <div class="h-full rounded-full bg-marigold-500" data-goal-bar style="width: 0%"></div>
+            </div>
+          </div>
+
+          <button type="button" class="btn-primary mt-6 w-full" data-goal-cta data-buy data-buy-type="fundraising">Donate to This Project</button>
+          <p class="mt-4 text-center text-xs text-ivory-500">
+            Give right here, securely. Your gift counts directly toward this project, and all gifts are tax deductible.
+          </p>
+        </div>
+
+        <a href="/temple-projects/" class="block text-center text-sm font-semibold text-maroon-700 hover:underline">← All Temple Projects</a>
+      </aside>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { fetchTweebleFundraising, formatGoalAmount, truncate } from '../../../lib/tweeble-client';
+  import { descriptionToHtml } from '../../../lib/description';
+  import { initShareButtons } from '../../../lib/share-widget';
+  import { initCheckoutButtons } from '../../../lib/checkout';
+  initShareButtons();
+  initCheckoutButtons();
+
+  const id = new URLSearchParams(location.search).get('id');
+  const loadingEl = document.getElementById('goal-loading');
+  const notFoundEl = document.getElementById('goal-not-found');
+  const contentEl = document.getElementById('goal-content');
+
+  function showNotFound() {
+    loadingEl?.remove();
+    contentEl?.remove();
+    notFoundEl?.classList.remove('hidden');
+    const heroTitle = document.querySelector('[data-goal-hero-title]');
+    if (heroTitle) heroTitle.textContent = 'Project Not Found';
+  }
+
+  (async () => {
+    if (!id) return showNotFound();
+
+    let goal;
+    try {
+      const goals = await fetchTweebleFundraising();
+      goal = goals.find((g) => g.id === id);
+    } catch (err) {
+      console.error('Failed to load Tweeble fundraising goals', err);
+    }
+
+    if (!goal) return showNotFound();
+
+    document.title = `${goal.title} | ${document.title.split('|').slice(1).join('|').trim()}`;
+    const heroTitle = document.querySelector('[data-goal-hero-title]');
+    if (heroTitle) heroTitle.textContent = goal.title;
+
+    if (goal.targetCents > 0) {
+      const targetText = formatGoalAmount(goal.targetCents);
+      const heroTarget = document.querySelector('[data-goal-hero-target]');
+      if (heroTarget) heroTarget.textContent = `Goal ${targetText}`;
+      document.querySelector('[data-goal-hero-badges]')?.classList.remove('hidden');
+      document.querySelector('[data-goal-hero-badges]')?.classList.add('flex');
+      const sideTarget = document.querySelector('[data-goal-target]');
+      if (sideTarget) sideTarget.textContent = targetText;
+
+      const raised = goal.raisedCents ?? 0;
+      const pct = Math.min(100, Math.round((raised / goal.targetCents) * 100));
+      const donors = goal.donorCount ?? 0;
+      const raisedEl = document.querySelector('[data-goal-raised]');
+      if (raisedEl) raisedEl.textContent = raised > 0 ? `${formatGoalAmount(raised)} raised` : 'Be the first to give';
+      const percentEl = document.querySelector('[data-goal-percent]');
+      if (percentEl) percentEl.textContent = raised > 0 ? `${pct}% of goal${donors > 0 ? ` · ${donors} donor${donors === 1 ? '' : 's'}` : ''}` : '';
+      const barEl = document.querySelector<HTMLElement>('[data-goal-bar]');
+      if (barEl) barEl.style.width = `${pct}%`;
+      document.querySelector('[data-goal-progress]')?.classList.remove('hidden');
+    }
+
+    const descHolder = document.querySelector('[data-goal-description]');
+    if (descHolder) descHolder.innerHTML = descriptionToHtml(goal.description);
+
+    const photos = goal.photoUrls ?? [];
+    const cover = goal.coverPhotoUrl;
+    const allPhotos = cover ? [cover, ...photos.filter((p) => p !== cover)] : photos;
+    const photosHolder = document.querySelector<HTMLElement>('[data-goal-photos]');
+    if (photosHolder && allPhotos.length > 0) {
+      const [first, ...rest] = allPhotos;
+      const big = document.createElement('img');
+      big.src = first;
+      big.alt = goal.title;
+      big.className = 'w-full rounded-2xl shadow-lift';
+      photosHolder.appendChild(big);
+      if (rest.length > 0) {
+        const row = document.createElement('div');
+        row.className = 'grid grid-cols-2 gap-3 sm:grid-cols-3';
+        for (const url of rest) {
+          const thumb = document.createElement('img');
+          thumb.src = url;
+          thumb.alt = goal.title;
+          thumb.loading = 'lazy';
+          thumb.className = 'h-32 w-full rounded-xl object-cover';
+          row.appendChild(thumb);
+        }
+        photosHolder.appendChild(row);
+      }
+      photosHolder.classList.remove('hidden');
+    }
+
+    for (const trigger of document.querySelectorAll<HTMLElement>('[data-goal-cta], [data-goal-cta-hero]')) {
+      trigger.dataset.buyItem = goal.id;
+      trigger.dataset.buyTitle = goal.title;
+      trigger.dataset.buyFallback = goal.url;
+      if (goal.embedUrl) trigger.dataset.buyEmbed = goal.embedUrl;
+      trigger.classList.remove('hidden');
+    }
+
+    const shareBtn = document.querySelector<HTMLElement>('.share-trigger');
+    if (shareBtn) {
+      shareBtn.dataset.shareUrl = location.href;
+      shareBtn.dataset.shareTitle = goal.title;
+    }
+
+    loadingEl?.remove();
+    contentEl?.classList.remove('hidden');
+    contentEl?.classList.add('grid');
+  })();
+</script>
